@@ -1,0 +1,17 @@
+[project]
+name = "regul"
+version = "0.1.0"
+description = "Régulation de tension d'un transformateur HTB/HTA à régleur en charge (automate, simulation, Modbus TCP, IHM Node-RED)"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pymodbus>=3.15.0,<4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]          # les tests importent automate.py, simulation.py, mapping.py

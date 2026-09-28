@@ -1,7 +1,6 @@
 # Spécification — Régulation de tension d'un transformateur HTB/HTA
 
-> Version 0 (étape 1) : **à valider**. Les valeurs marquées ❓ sont des
-> propositions qui dépendent des réponses aux questions.
+> Version 1 : validée à l'étape 1 (réponses aux questions intégrées).
 
 ## 1. Système étudié
 
@@ -25,7 +24,7 @@ Trois programmes :
 
 | Programme | Rôle |
 |---|---|
-| `automate` (Python) | Serveur Modbus TCP (port 5020) + cycle LIRE → TRAITER → ÉCRIRE toutes les 100 ms ❓ |
+| `automate` (Python) | Serveur Modbus TCP (port 5020) + cycle LIRE → TRAITER → ÉCRIRE toutes les 100 ms |
 | `simulation` (Python) | Client Modbus : fait évoluer U_HTB, I_charge et la prise ; calcule U_HTA |
 | IHM Node-RED | Client Modbus : affichage, réglages, boutons, alarmes, courbes |
 
@@ -35,17 +34,12 @@ Trois programmes :
 U_HTA = 20 kV × (U_HTB / 63) × (1 + 0,0125 × (prise − 9)) − k × I_charge
 ```
 
-| Grandeur | Valeur proposée |
+| Grandeur | Valeur |
 |---|---|
 | Pas d'une prise | 1,25 % (plage totale ± 10 %) |
-| k (chute de tension) | 0,001 kV/A (soit 1 V par ampère : 1 kV à 1000 A) ❓ |
-| U_HTB | 63 kV × (1 + 0,05 × sin(2π t / 240 s)) ❓ |
-| I_charge | 500 A + 300 A × sin(2π t / 180 s) (de 200 à 800 A) ❓ |
+| k (chute de tension) | 0,001 kV/A (1 V par ampère : 1 kV à 1000 A) |
 | Durée d'une manœuvre | 5 s |
 | Prise au démarrage | 9 (neutre) |
-
-Au démarrage (U_HTB = 63 kV, I = 500 A, prise 9) : U_HTA = 19,5 kV, donc
-1 kV sous la consigne de 20,5 kV → l'automate doit monter d'environ 4 prises.
 
 Convention : **monter** = prise + 1 = la tension HTA **augmente**.
 
@@ -53,9 +47,32 @@ Régleur simulé : sur un ordre (monter ou descendre), s'il n'est pas en butée
 et pas déjà en manœuvre, il met « manœuvre en cours » à 1 pendant 5 s, puis
 change la prise et remet « manœuvre en cours » à 0.
 
-Pour les tests de l'IHM (❓ voir questions) :
-- **Régleur bloqué** : la manœuvre ne se termine jamais → défaut régleur.
-- **Perte de la tension HTB** : U_HTB = 0 → blocage de la régulation.
+### Deux façons de faire varier U_HTB et la charge (coil `CO_VARIATIONS_AUTO`)
+
+**1. Curseurs de l'IHM** (`CO_VARIATIONS_AUTO` = 0) : l'opérateur règle
+lui-même U_HTB et I_charge. Pratique pour une démonstration pas à pas
+(baisser U_HTB à 0 montre le blocage sous-tension).
+
+**2. « Vie réelle » accélérée** (`CO_VARIATIONS_AUTO` = 1) : une horloge
+simulée fait défiler les heures, les jours de la semaine et les saisons.
+
+| Élément | Modèle |
+|---|---|
+| Accélération | 1 s réelle = 6 min simulées : une journée dure 4 min |
+| Saisons | le calendrier avance de 15 jours par journée simulée : une année dure environ 1 h 40. L'IHM peut écrire `HR_JOUR` pour sauter en hiver ou en été |
+| Température | moyenne saisonnière (≈ 4 °C mi-janvier, ≈ 20 °C mi-juillet) + cycle jour/nuit (± 4 °C, plus froid à 5 h, plus chaud à 15 h) + dérive aléatoire lente (vague de froid, canicule) |
+| Profil de charge journalier | tableau de 24 coefficients horaires : creux de nuit (4 h), pointe du matin (8-9 h), plateau, pointe du soir (19 h) |
+| Effet de la température | chauffage électrique : + 3 % par °C sous 15 °C ; climatisation : + 2 % par °C au-dessus de 25 °C |
+| Week-end | charge × 0,85 le samedi et le dimanche |
+| Aléa | petit bruit filtré (± quelques %) |
+| U_HTB | plus haute la nuit (réseau peu chargé), plus basse aux heures de pointe, + dérive aléatoire lente ; toujours dans ± 5 % |
+
+Ordres de grandeur : ≈ 300 A une nuit d'été, ≈ 900 A un soir de grand
+froid. La chute k × I varie donc de 0,3 à 0,9 kV, et U_HTB de ± 3 kV
+au secondaire : il faut plusieurs prises par jour, davantage en hiver.
+
+Les défauts (régleur bloqué, manœuvre trop longue) ne sont **pas** simulés,
+pour garder le code court : ils sont vérifiés par les tests pytest.
 
 ## 3. Entrées / sorties de l'automate
 
@@ -75,8 +92,8 @@ Pour les tests de l'IHM (❓ voir questions) :
 |---|---|---|---|
 | Consigne | 20,50 kV | 19,00 – 22,00 kV | kV × 100 (2050) |
 | Bande morte | ± 1,00 % | ± 0,70 – 5,00 % | % × 100 (100) |
-| Tempo 1re manœuvre | 10 s (réel : 30 s) ❓ | 1 – 120 s | s |
-| Tempo manœuvres suivantes | 5 s (réel : 10 s) ❓ | 1 – 120 s | s |
+| Tempo 1re manœuvre | 10 s (réel : 30 s) | 1 – 120 s | s |
+| Tempo manœuvres suivantes | 5 s (réel : 10 s) | 1 – 120 s | s |
 
 Constantes (dans le code, non réglables) :
 - **Durée maxi d'une manœuvre** : 10 s → au-delà, défaut régleur.
@@ -128,7 +145,7 @@ Un seul Grafcet pour les deux modes : seule l'entrée dans la manœuvre change.
 └────────┬─────────┘            │             │
    ┌─────┴───────────┐          │             │
    │ tempo écoulée   │ dans la bande + MANUEL │
-   │                 │ + bloqué + butée ──────┤ (retour à 0)
+   │                 │ + autre sens + bloqué ─┤ (retour à 0)
    ▼                 ▼                        │
 ┌──────────────────────────────┐              │
 │ 2  ORDRE   ordre monter ou   │ ◄────────────┘ (depuis 0, en MANUEL)
@@ -172,19 +189,21 @@ et les holding registers sont utilisés.
 | 5 | `CO_BP_MOINS` | IHM → automate | impulsion, remise à 0 par l'automate |
 | 6 | `CO_ACQUITTEMENT` | IHM → automate | impulsion, remise à 0 par l'automate |
 | 7 | `CO_DEFAUT_REGLEUR` | automate → IHM | alarme |
-| 8 | `CO_BLOCAGE_SOUS_TENSION` | automate → IHM | U_HTA < 16 kV |
+| 8 | `CO_BLOCAGE` | automate → IHM | U_HTA < 16 kV |
 | 9 | `CO_BUTEE` | automate → IHM | prise = 1 ou 17 |
-| 10 | `CO_TEST_REGLEUR_BLOQUE` | IHM → simulation | test : le régleur ne finit plus sa manœuvre ❓ |
-| 11 | `CO_TEST_PERTE_HTB` | IHM → simulation | test : U_HTB = 0 ❓ |
+| 10 | `CO_VARIATIONS_AUTO` | IHM → simulation | 1 = « vie réelle », 0 = curseurs de l'IHM |
 
-### Holding registers (mots de 16 bits, non signés)
+### Holding registers (mots de 16 bits)
 
 | Adr. | Nom | Sens | Unité |
 |---|---|---|---|
 | 0 | `HR_U_HTA` | simulation → automate | kV × 100 (2050 = 20,50 kV) |
 | 1 | `HR_PRISE` | simulation → automate | 1 à 17 |
-| 2 | `HR_U_HTB` | simulation → IHM | kV × 10 (630 = 63,0 kV) |
-| 3 | `HR_I_CHARGE` | simulation → IHM | A |
+| 2 | `HR_U_HTB` | simulation ou curseur IHM | kV × 10 (630 = 63,0 kV) |
+| 3 | `HR_I_CHARGE` | simulation ou curseur IHM | A |
+| 4 | `HR_TEMPERATURE` | simulation → IHM | °C × 10, **signé** (complément à 2, type INT) |
+| 5 | `HR_HEURE` | simulation → IHM | minutes depuis minuit (0 à 1439) |
+| 6 | `HR_JOUR` | simulation ↔ IHM | jour de l'année (1 à 365) ; l'IHM l'écrit pour changer de saison |
 | 10 | `HR_CONSIGNE` | IHM → automate | kV × 100 |
 | 11 | `HR_BANDE_MORTE` | IHM → automate | % × 100 |
 | 12 | `HR_TEMPO_1` | IHM → automate | s |
@@ -201,23 +220,25 @@ et les holding registers sont utilisés.
 - Usure / comptage d'entretien du régleur (seul un compteur est affiché).
 - La tension HTB et la charge ne passent pas par l'automate (il ne mesure que U_HTA et la prise).
 
-## 8. Organisation des fichiers (proposée)
+## 8. Organisation des fichiers
+
+Le moins de fichiers possible : la partie « pure » (sans réseau) de chaque
+programme est dans le même fichier que sa partie Modbus.
 
 ```
 REGUL/
-├── pyproject.toml            dépendance : pymodbus (pytest en dev)
-├── README.md                 installation, lancement (3 terminaux), démo
-├── docs/specification.md     ce document (mapping inclus)
-├── src/regul/
-│   ├── mapping.py            TOUTES les adresses Modbus
-│   ├── regulateur.py         Tempo + Regulateur (PUR, sans réseau)
-│   ├── modele.py             modèle transfo + régleur (PUR, sans réseau)
-│   ├── automate.py           serveur Modbus + cycle LIRE → TRAITER → ÉCRIRE
-│   └── simulation.py         client Modbus qui fait tourner le modèle
+├── pyproject.toml         dépendance : pymodbus (pytest en dev)
+├── README.md              installation, lancement (3 terminaux), démo
+├── docs/specification.md  ce document (mapping inclus)
+├── mapping.py             TOUTES les adresses Modbus
+├── automate.py            Tempo + Regulateur (purs) + serveur Modbus et cycle
+├── simulation.py          modèle transfo + régleur + vie réelle (purs) + client Modbus
 ├── tests/
-│   ├── test_regulateur.py
-│   └── test_modele.py
+│   ├── test_automate.py
+│   └── test_simulation.py
 └── node-red/
-    ├── package.json          dashboard 2.0 + contrib-modbus + override
+    ├── package.json       dashboard 2.0 + contrib-modbus + override
     └── flows.json
 ```
+
+Lancement : `uv run automate.py`, `uv run simulation.py`, `npm start` (dans `node-red/`).
