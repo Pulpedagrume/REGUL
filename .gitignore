@@ -1,0 +1,21 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Tests
+.pytest_cache/
+
+# Node-RED (seuls package.json, package-lock.json et flows.json sont versionnés)
+node_modules/
+node-red/settings.js
+node-red/.config.*
+node-red/.flows*.backup
+node-red/flows_cred.json
+node-red/lib/
