@@ -1,0 +1,529 @@
+<title>Fiche régulation HTB/HTA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Mise en page : une colonne de lecture (fiche d'oral), figures pleine largeur, ton « tableau de conduite » */
+:root {
+  --fond: #eef1f3;
+  --papier: #ffffff;
+  --encre: #17212b;
+  --gris: #5b6874;
+  --trait: #c7d0d7;
+  --tension: #1d5fc4;      /* U HTA : bleu */
+  --prise: #b26b00;        /* prise : ambre */
+  --charge: #6b7785;
+  --alarme: #c92a2a;
+  --ok: #2b8a3e;
+  --bande: rgba(43, 138, 62, .13);
+  --f-titre: "Barlow Semi Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-texte: "Source Sans 3", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --f-mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fond: #10161b; --papier: #172027; --encre: #e4eaee; --gris: #9aa7b1; --trait: #2e3c47;
+    --tension: #6ea6ff; --prise: #e7a94b; --charge: #8d99a5; --alarme: #ff6b6b; --ok: #5cc27a;
+    --bande: rgba(92, 194, 122, .16); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fond: #10161b; --papier: #172027; --encre: #e4eaee; --gris: #9aa7b1; --trait: #2e3c47;
+  --tension: #6ea6ff; --prise: #e7a94b; --charge: #8d99a5; --alarme: #ff6b6b; --ok: #5cc27a;
+  --bande: rgba(92, 194, 122, .16); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--fond); color: var(--encre); font: 17px/1.55 var(--f-texte); }
+.page { max-width: 880px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 64px; display: grid; gap: 44px; }
+h1, h2, h3 { font-family: var(--f-titre); line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.1rem, 5vw, 3.1rem); font-weight: 700; letter-spacing: -.01em; }
+h2 { font-size: 1.65rem; font-weight: 600; display: flex; gap: .55em; align-items: baseline; }
+h2 .num { font-family: var(--f-mono); font-size: .9rem; color: var(--gris); font-weight: 400; }
+h3 { font-size: 1.15rem; font-weight: 600; }
+p { margin: 0; max-width: 66ch; }
+section { display: grid; gap: 16px; min-width: 0; }
+.surtitre { font: 600 .8rem/1 var(--f-titre); letter-spacing: .12em; text-transform: uppercase; color: var(--gris); }
+.chapeau { font-size: 1.15rem; color: var(--gris); max-width: 60ch; }
+header { display: grid; gap: 14px; border-bottom: 2px solid var(--encre); padding-bottom: 26px; }
+.chiffres { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-top: 8px; }
+.chiffres div { display: grid; }
+.chiffres b { font: 600 1.45rem/1.1 var(--f-titre); font-variant-numeric: tabular-nums; }
+.chiffres span { font-size: .85rem; color: var(--gris); }
+figure { margin: 0; background: var(--papier); border: 1px solid var(--trait); border-radius: 6px; padding: 18px; display: grid; gap: 10px; min-width: 0; }
+figure .dessin { overflow-x: auto; }
+figure svg { display: block; width: 100%; height: auto; min-width: 560px; }
+figcaption { font-size: .9rem; color: var(--gris); }
+figcaption b { color: var(--encre); font-weight: 600; }
+.formule { font: 1rem/1.5 var(--f-mono); background: var(--papier); border: 1px solid var(--trait); border-radius: 6px; padding: 14px 16px; overflow-x: auto; white-space: nowrap; }
+code { font: .9em var(--f-mono); }
+ul.points { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; max-width: 70ch; }
+.tableau { overflow-x: auto; background: var(--papier); border: 1px solid var(--trait); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--trait); vertical-align: top; }
+th { font: 600 .78rem var(--f-titre); letter-spacing: .08em; text-transform: uppercase; color: var(--gris); }
+td:first-child { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+.deux { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.deux > * { min-width: 0; }
+.oral { display: grid; gap: 12px; counter-reset: q; }
+.oral div { background: var(--papier); border: 1px solid var(--trait); border-left: 4px solid var(--tension); border-radius: 4px; padding: 12px 16px; display: grid; gap: 4px; }
+.oral b { font-family: var(--f-titre); font-size: 1.08rem; font-weight: 600; }
+.etapes { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.etapes li { display: grid; grid-template-columns: 7.5rem 1fr; gap: 12px; align-items: baseline; }
+.puce { font: 600 .74rem/1 var(--f-titre); letter-spacing: .08em; text-transform: uppercase; padding: 4px 8px; border-radius: 99px; text-align: center; border: 1px solid var(--trait); color: var(--gris); }
+.puce.fait { background: var(--ok); border-color: var(--ok); color: var(--papier); }
+
+/* SVG : couleurs issues des jetons */
+svg text { font-family: var(--f-texte); fill: var(--encre); }
+svg .gradu { font: 12px var(--f-mono); fill: var(--gris); }
+svg .panneau { font: 600 13px var(--f-titre); fill: var(--gris); letter-spacing: .04em; }
+svg .annot { font-size: 12.5px; fill: var(--gris); font-style: italic; }
+svg .fin { font: 600 13px var(--f-mono); fill: var(--prise); }
+svg .grille { stroke: var(--trait); stroke-width: 1; }
+svg .bande { fill: var(--bande); }
+svg .consigne { stroke: var(--ok); stroke-width: 1.2; stroke-dasharray: 5 4; }
+svg .c-u { fill: none; stroke: var(--tension); stroke-width: 2.2; stroke-linejoin: round; }
+svg .c-p { fill: none; stroke: var(--prise); stroke-width: 2.2; }
+svg .c-i { fill: none; stroke: var(--charge); stroke-width: 1.6; stroke-dasharray: 2 3; }
+svg .fil { stroke: var(--encre); stroke-width: 1.6; fill: none; }
+svg .fil-fin { stroke: var(--encre); stroke-width: 1.2; fill: none; }
+svg .barre { stroke: var(--encre); stroke-width: 5; }
+svg .jdb { stroke: var(--encre); stroke-width: 6; }
+svg .boite { fill: var(--papier); stroke: var(--encre); stroke-width: 1.6; }
+svg .boite-u { fill: var(--papier); stroke: var(--tension); stroke-width: 1.8; }
+svg .boite-p { fill: var(--papier); stroke: var(--prise); stroke-width: 1.8; }
+svg .boite-a { fill: var(--papier); stroke: var(--alarme); stroke-width: 1.8; }
+svg .zone { fill: var(--fond); stroke: var(--trait); stroke-width: 1; }
+svg .fleche-u { stroke: var(--tension); stroke-width: 1.8; fill: none; }
+svg .fleche-p { stroke: var(--prise); stroke-width: 1.8; fill: none; }
+svg .t-u { fill: var(--tension); }
+svg .t-p { fill: var(--prise); }
+svg .t-a { fill: var(--alarme); }
+svg .t-g { fill: var(--gris); }
+svg .pointe { fill: var(--encre); }
+svg .pointe-u { fill: var(--tension); }
+svg .pointe-p { fill: var(--prise); }
+svg .num-etape { font: 600 17px var(--f-mono); }
+svg .petit { font-size: 12.5px; }
+svg .titre-boite { font: 600 15px var(--f-titre); letter-spacing: .03em; }
+svg .mono { font: 12px var(--f-mono); }
+
+/* Maquette IHM */
+.ihm { background: var(--fond); border: 1px solid var(--trait); border-radius: 6px; padding: 12px; display: grid; gap: 10px; font-size: .86rem; }
+.ihm-bandeau { font: 600 .95rem var(--f-titre); letter-spacing: .06em; text-transform: uppercase; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+.ihm-bandeau span { color: var(--gris); font-family: var(--f-mono); font-size: .78rem; letter-spacing: 0; text-transform: none; font-weight: 400; }
+.ihm-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.carte { background: var(--papier); border: 1px solid var(--trait); border-radius: 4px; padding: 10px 12px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.carte h4 { margin: 0; font: 600 .74rem var(--f-titre); letter-spacing: .1em; text-transform: uppercase; color: var(--gris); }
+.val { display: flex; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; }
+.val b { font-family: var(--f-mono); font-weight: 600; }
+.gros { font: 600 1.9rem/1 var(--f-titre); color: var(--tension); font-variant-numeric: tabular-nums; }
+.gros small { font-size: .9rem; color: var(--gris); font-weight: 500; }
+.jauge { height: 8px; border-radius: 4px; background: var(--fond); border: 1px solid var(--trait); overflow: hidden; }
+.jauge i { display: block; height: 100%; width: 70.6%; background: var(--prise); }
+.voyant { display: flex; gap: 8px; align-items: center; }
+.voyant::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--trait); flex: none; }
+.voyant.on::before { background: var(--prise); }
+.voyant.alarme::before { background: var(--alarme); }
+.boutons { display: flex; gap: 6px; flex-wrap: wrap; }
+.bouton { font: 600 .8rem var(--f-titre); letter-spacing: .05em; border: 1px solid var(--encre); border-radius: 3px; padding: 5px 10px; text-transform: uppercase; }
+.bouton.actif { background: var(--encre); color: var(--papier); }
+.bouton.gris { border-color: var(--trait); color: var(--gris); }
+.curseur { display: grid; grid-template-columns: 4.2rem 1fr 3.2rem; gap: 8px; align-items: center; font-variant-numeric: tabular-nums; }
+.curseur i { height: 4px; background: var(--trait); border-radius: 2px; position: relative; }
+.curseur i::after { content: ""; position: absolute; top: -5px; left: var(--pos); width: 12px; height: 12px; border-radius: 50%; background: var(--encre); }
+.mini { background: var(--papier); border: 1px solid var(--trait); border-radius: 4px; padding: 8px 12px; display: grid; gap: 4px; }
+.mini svg { width: 100%; height: 64px; display: block; min-width: 0; }
+.ihm .c-u { fill: none; stroke: var(--tension); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+.ihm .bande { fill: var(--bande); }
+
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  .etapes li { grid-template-columns: 1fr; gap: 2px; }
+  .puce { justify-self: start; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<main class="page">
+
+<header>
+  <div class="surtitre">Projet GEII · Automatisme et informatique industrielle</div>
+  <h1>Régulation de tension d'un transformateur HTB/HTA à régleur en charge</h1>
+  <p class="chapeau">Un automate choisit la prise du transformateur d'un poste source pour garder le jeu de barres 20 kV près de sa consigne, quelles que soient la tension du réseau amont et la charge des clients.</p>
+  <div class="chiffres">
+    <div><b>63 / 20 kV</b><span>transformateur</span></div>
+    <div><b>17 prises</b><span>1,25 % par prise, 9 = neutre</span></div>
+    <div><b>20,5 kV ± 1 %</b><span>consigne et bande morte</span></div>
+    <div><b>5 s</b><span>durée d'un changement de prise</span></div>
+  </div>
+</header>
+
+<section>
+  <h2><span class="num">1</span>Le problème</h2>
+  <p>La tension du jeu de barres HTA baisse quand la charge augmente (chute de tension dans le transformateur) et suit les variations du réseau HTB. Les clients doivent pourtant recevoir une tension stable. Le <b>régleur en charge</b> change le rapport de transformation sans couper le courant : une prise de plus, et la tension HTA monte de 1,25 %.</p>
+  <figure>
+    <div class="dessin">
+    <svg viewBox="0 0 680 300" role="img" aria-labelledby="fig1t">
+      <title id="fig1t">Schéma du poste : réseau HTB, transformateur avec régleur, jeu de barres HTA, charge et automate</title>
+      <defs>
+        <marker id="pn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="pointe"/></marker>
+        <marker id="pu" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="pointe-u"/></marker>
+        <marker id="pp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="pointe-p"/></marker>
+      </defs>
+      <!-- réseau HTB -->
+      <line x1="60" y1="40" x2="340" y2="40" class="jdb"/>
+      <text x="60" y="26" class="titre-boite">Réseau HTB 63 kV</text>
+      <text x="350" y="45" class="petit t-g">varie de ± 5 %</text>
+      <line x1="200" y1="40" x2="200" y2="78" class="fil"/>
+      <!-- transformateur : deux cercles -->
+      <circle cx="200" cy="100" r="24" class="boite"/>
+      <circle cx="200" cy="134" r="24" class="boite"/>
+      <line x1="168" y1="150" x2="234" y2="84" class="fleche-p" marker-end="url(#pp)"/>
+      <text x="100" y="104" class="petit" text-anchor="end">TR</text>
+      <text x="100" y="121" class="petit t-p" text-anchor="end">régleur en charge</text>
+      <text x="100" y="137" class="petit t-p" text-anchor="end">prises 1 à 17</text>
+      <line x1="200" y1="158" x2="200" y2="200" class="fil"/>
+      <!-- jeu de barres HTA -->
+      <line x1="60" y1="200" x2="400" y2="200" class="jdb"/>
+      <text x="60" y="186" class="titre-boite">Jeu de barres HTA 20 kV</text>
+      <!-- départs -->
+      <line x1="130" y1="200" x2="130" y2="262" class="fil" marker-end="url(#pn)"/>
+      <line x1="200" y1="200" x2="200" y2="262" class="fil" marker-end="url(#pn)"/>
+      <line x1="270" y1="200" x2="270" y2="262" class="fil" marker-end="url(#pn)"/>
+      <text x="200" y="286" class="petit" text-anchor="middle">charge des clients : I_charge (A)</text>
+      <!-- mesure de tension -->
+      <line x1="340" y1="200" x2="340" y2="230" class="fil-fin"/>
+      <circle cx="340" cy="238" r="8" class="boite"/>
+      <text x="354" y="254" class="petit t-u">TT</text>
+      <path d="M348,238 H440 V196" class="fleche-u" marker-end="url(#pu)"/>
+      <text x="386" y="230" class="petit t-u">U_HTA</text>
+      <!-- automate -->
+      <rect x="430" y="110" width="210" height="84" rx="4" class="boite-u"/>
+      <text x="535" y="140" class="titre-boite" text-anchor="middle">AUTOMATE</text>
+      <text x="535" y="160" class="petit t-g" text-anchor="middle">consigne · bande morte · tempos</text>
+      <text x="535" y="178" class="petit t-g" text-anchor="middle">mode AUTO / MANUEL</text>
+      <!-- ordres et retours régleur -->
+      <path d="M430,124 H236" class="fleche-p" marker-end="url(#pp)"/>
+      <text x="330" y="116" class="petit t-p" text-anchor="middle">ordre monter / descendre</text>
+      <path d="M232,148 H430" class="fleche-p" marker-end="url(#pp)"/>
+      <text x="330" y="166" class="petit t-p" text-anchor="middle">position · manœuvre en cours</text>
+      <!-- IHM -->
+      <rect x="470" y="30" width="130" height="44" rx="4" class="boite"/>
+      <text x="535" y="57" class="titre-boite" text-anchor="middle">IHM Node-RED</text>
+      <line x1="535" y1="76" x2="535" y2="108" class="fil-fin" marker-start="url(#pn)" marker-end="url(#pn)"/>
+    </svg>
+    </div>
+    <figcaption><b>Figure 1.</b> Le poste simulé. L'automate mesure la tension du jeu de barres et agit sur le régleur ; l'IHM sert à surveiller et à régler.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2><span class="num">2</span>Le modèle et le principe de régulation</h2>
+  <p>La simulation calcule la tension HTA avec un modèle volontairement simple :</p>
+  <div class="formule">U_HTA = 20 kV × (U_HTB / 63) × (1 + 0,0125 × (prise − 9)) − k × I_charge &nbsp;&nbsp; avec k = 0,001 kV/A</div>
+  <p>L'automate compare U_HTA à la bande <b>consigne ± bande morte</b>. Si la tension en sort et y reste pendant une temporisation (10 s pour la 1<sup>re</sup> manœuvre, 5 s pour les suivantes), il donne un ordre « monter » ou « descendre » d'une prise, puis attend la fin de la manœuvre.</p>
+  <figure>
+    <div class="dessin">
+<svg viewBox="0 0 720 380" role="img" aria-labelledby="fig2t">
+<title id="fig2t">Réponse du régulateur à une montée de la charge : tension HTA, prise et courant</title>
+<rect x="64" y="51.6" width="636" height="43.9" class="bande"/>
+<line x1="64" x2="700" y1="73.6" y2="73.6" class="consigne"/>
+<line x1="64" x2="700" y1="170.0" y2="170.0" class="grille"/>
+<text x="56" y="174.0" class="gradu" text-anchor="end">19,6</text>
+<line x1="64" x2="700" y1="127.1" y2="127.1" class="grille"/>
+<text x="56" y="131.1" class="gradu" text-anchor="end">20,0</text>
+<line x1="64" x2="700" y1="73.6" y2="73.6" class="grille"/>
+<text x="56" y="77.6" class="gradu" text-anchor="end">20,5</text>
+<line x1="64" x2="700" y1="20.0" y2="20.0" class="grille"/>
+<text x="56" y="24.0" class="gradu" text-anchor="end">21,0</text>
+<line x1="64" x2="700" y1="253.3" y2="253.3" class="grille"/>
+<text x="56" y="257.3" class="gradu" text-anchor="end">9</text>
+<line x1="64" x2="700" y1="230.0" y2="230.0" class="grille"/>
+<text x="56" y="234.0" class="gradu" text-anchor="end">11</text>
+<line x1="64" x2="700" y1="206.7" y2="206.7" class="grille"/>
+<text x="56" y="210.7" class="gradu" text-anchor="end">13</text>
+<line x1="64" x2="700" y1="345.0" y2="345.0" class="grille"/>
+<text x="56" y="349.0" class="gradu" text-anchor="end">0</text>
+<line x1="64" x2="700" y1="317.5" y2="317.5" class="grille"/>
+<text x="56" y="321.5" class="gradu" text-anchor="end">500</text>
+<line x1="64" x2="700" y1="290.0" y2="290.0" class="grille"/>
+<text x="56" y="294.0" class="gradu" text-anchor="end">1000</text>
+<text x="64.0" y="370" class="gradu" text-anchor="middle">0 s</text>
+<text x="170.0" y="370" class="gradu" text-anchor="middle">30 s</text>
+<text x="276.0" y="370" class="gradu" text-anchor="middle">60 s</text>
+<text x="382.0" y="370" class="gradu" text-anchor="middle">90 s</text>
+<text x="488.0" y="370" class="gradu" text-anchor="middle">120 s</text>
+<text x="594.0" y="370" class="gradu" text-anchor="middle">150 s</text>
+<text x="700.0" y="370" class="gradu" text-anchor="middle">180 s</text>
+<text x="70" y="14" class="panneau">U HTA (kV)</text>
+<text x="696" y="110.5" class="annot" text-anchor="end">bande morte 20,5 kV ± 1 %</text>
+<text x="70" y="189" class="panneau">Prise</text>
+<text x="70" y="284" class="panneau">Charge (A)</text>
+<polyline points="64.0,159.3 65.8,159.3 67.5,159.3 69.3,159.3 71.1,159.3 72.8,159.3 74.6,159.3 76.4,159.3 78.1,159.3 79.9,159.3 81.7,159.3 83.4,159.3 85.2,159.3 87.0,159.3 88.7,159.3 90.5,159.3 92.3,159.3 94.0,159.3 95.8,159.3 97.6,159.3 99.3,159.3 101.1,159.3 102.9,159.3 104.6,159.3 106.4,159.3 108.2,159.3 109.9,159.3 111.7,159.3 113.5,159.3 115.2,159.3 117.0,159.3 118.8,132.5 120.5,132.5 122.3,132.5 124.1,132.5 125.8,132.5 127.6,132.5 129.4,132.5 131.1,132.5 132.9,132.5 134.7,132.5 136.4,133.0 138.2,133.6 140.0,134.1 141.7,134.6 143.5,135.2 145.3,135.7 147.0,136.3 148.8,136.8 150.6,137.3 152.3,137.9 154.1,111.6 155.9,112.1 157.6,112.7 159.4,113.2 161.2,113.8 162.9,114.3 164.7,114.8 166.5,115.4 168.2,115.9 170.0,116.4 171.8,117.0 173.5,117.5 175.3,118.0 177.1,118.6 178.8,119.1 180.6,119.6 182.4,120.2 184.1,120.7 185.9,121.3 187.7,121.8 189.4,95.5 191.2,96.1 193.0,96.6 194.7,97.1 196.5,97.7 198.3,98.2 200.0,98.8 201.8,99.3 203.6,99.8 205.3,100.4 207.1,100.9 208.9,101.4 210.6,102.0 212.4,102.5 214.2,103.0 215.9,103.6 217.7,104.1 219.5,104.6 221.2,105.2 223.0,105.7 224.8,106.3 226.5,80.0 228.3,80.5 230.1,81.1 231.8,81.6 233.6,82.1 235.4,82.7 237.1,83.2 238.9,83.8 240.7,84.3 242.4,84.8 244.2,85.4 246.0,85.9 247.7,86.4 249.5,87.0 251.3,87.5 253.0,88.0 254.8,88.6 256.6,89.1 258.3,89.6 260.1,90.2 261.9,90.7 263.6,91.3 265.4,91.8 267.2,92.3 268.9,92.9 270.7,93.4 272.5,93.9 274.2,94.5 276.0,95.0 277.8,95.5 279.5,96.1 281.3,96.6 283.1,97.1 284.8,97.7 286.6,98.2 288.4,98.8 290.1,99.3 291.9,99.8 293.7,100.4 295.4,100.9 297.2,101.4 299.0,102.0 300.7,102.5 302.5,103.0 304.3,103.6 306.0,104.1 307.8,104.6 309.6,105.2 311.3,105.7 313.1,106.3 314.9,106.8 316.6,107.3 318.4,107.9 320.2,108.4 321.9,108.9 323.7,109.5 325.5,110.0 327.2,110.5 329.0,111.1 330.8,111.6 332.5,85.4 334.3,85.9 336.1,86.4 337.8,87.0 339.6,87.5 341.4,88.0 343.1,88.6 344.9,89.1 346.7,89.6 348.4,89.6 350.2,89.6 352.0,89.6 353.7,89.6 355.5,89.6 357.3,89.6 359.0,89.6 360.8,89.6 362.6,89.6 364.3,89.6 366.1,89.6 367.9,89.6 369.6,89.6 371.4,89.6 373.2,89.6 374.9,89.6 376.7,89.6 378.5,89.6 380.2,89.6 382.0,89.6 383.8,89.6 385.5,89.6 387.3,89.6 389.1,89.6 390.8,89.6 392.6,89.6 394.4,89.6 396.1,89.6 397.9,89.6 399.7,89.6 401.4,89.6 403.2,89.6 405.0,89.6 406.7,89.6 408.5,89.6 410.3,89.6 412.0,89.6 413.8,89.6 415.6,89.6 417.3,89.6 419.1,89.6 420.9,89.6 422.6,89.6 424.4,89.6 426.2,89.6 427.9,89.6 429.7,89.6 431.5,89.6 433.2,89.6 435.0,89.6 436.8,89.6 438.5,89.6 440.3,89.6 442.1,89.6 443.8,89.6 445.6,89.6 447.4,89.6 449.1,89.6 450.9,89.6 452.7,89.6 454.4,89.6 456.2,89.6 458.0,89.6 459.7,89.6 461.5,89.6 463.3,89.6 465.0,89.6 466.8,89.6 468.6,89.6 470.3,89.6 472.1,89.6 473.9,89.6 475.6,89.6 477.4,89.6 479.2,89.6 480.9,89.6 482.7,89.6 484.5,89.6 486.2,89.6 488.0,89.6 489.8,89.6 491.5,89.6 493.3,89.6 495.1,89.6 496.8,89.6 498.6,89.6 500.4,89.6 502.1,89.6 503.9,89.6 505.7,89.6 507.4,89.6 509.2,89.6 511.0,89.6 512.7,89.6 514.5,89.6 516.3,89.6 518.0,89.6 519.8,89.6 521.6,89.6 523.3,89.6 525.1,88.8 526.9,87.8 528.6,87.0 530.4,86.1 532.2,85.1 533.9,84.3 535.7,83.4 537.5,82.5 539.2,81.6 541.0,80.8 542.8,79.8 544.5,78.9 546.3,78.1 548.1,77.1 549.8,76.2 551.6,75.4 553.4,74.4 555.1,73.6 556.9,72.7 558.7,71.8 560.4,70.9 562.2,70.0 564.0,69.1 565.7,68.2 567.5,67.4 569.3,66.4 571.0,65.5 572.8,64.7 574.6,63.7 576.3,62.9 578.1,62.0 579.9,61.0 581.6,60.2 583.4,59.3 585.2,58.4 586.9,57.5 588.7,56.6 590.5,55.7 592.2,54.8 594.0,54.0 595.8,53.0 597.5,52.1 599.3,51.3 601.1,50.3 602.8,49.5 604.6,48.6 606.4,47.6 608.1,46.8 609.9,45.9 611.7,45.0 613.4,44.1 615.2,43.2 617.0,42.3 618.7,41.4 620.5,40.6 622.3,39.6 624.0,38.8 625.8,37.9 627.6,36.9 629.3,36.1 631.1,36.1 632.9,36.1 634.6,36.1 636.4,36.1 638.2,36.1 639.9,36.1 641.7,36.1 643.5,36.1 645.2,36.1 647.0,36.1 648.8,36.1 650.5,36.1 652.3,62.9 654.1,62.9 655.8,62.9 657.6,62.9 659.4,62.9 661.1,62.9 662.9,62.9 664.7,62.9 666.4,62.9 668.2,62.9 670.0,62.9 671.7,62.9 673.5,62.9 675.3,62.9 677.0,62.9 678.8,62.9 680.6,62.9 682.3,62.9 684.1,62.9 685.9,62.9 687.6,62.9 689.4,62.9 691.2,62.9 692.9,62.9 694.7,62.9 696.5,62.9 698.2,62.9" class="c-u"/>
+<polyline points="64.0,253.3 65.8,253.3 67.5,253.3 69.3,253.3 71.1,253.3 72.8,253.3 74.6,253.3 76.4,253.3 78.1,253.3 79.9,253.3 81.7,253.3 83.4,253.3 85.2,253.3 87.0,253.3 88.7,253.3 90.5,253.3 92.3,253.3 94.0,253.3 95.8,253.3 97.6,253.3 99.3,253.3 101.1,253.3 102.9,253.3 104.6,253.3 106.4,253.3 108.2,253.3 109.9,253.3 111.7,253.3 113.5,253.3 115.2,253.3 117.0,253.3 117.0,241.7 118.8,241.7 120.5,241.7 122.3,241.7 124.1,241.7 125.8,241.7 127.6,241.7 129.4,241.7 131.1,241.7 132.9,241.7 134.7,241.7 136.4,241.7 138.2,241.7 140.0,241.7 141.7,241.7 143.5,241.7 145.3,241.7 147.0,241.7 148.8,241.7 150.6,241.7 152.3,241.7 154.1,241.7 154.1,230.0 155.9,230.0 157.6,230.0 159.4,230.0 161.2,230.0 162.9,230.0 164.7,230.0 166.5,230.0 168.2,230.0 170.0,230.0 171.8,230.0 173.5,230.0 175.3,230.0 177.1,230.0 178.8,230.0 180.6,230.0 182.4,230.0 184.1,230.0 185.9,230.0 187.7,230.0 189.4,230.0 189.4,218.3 191.2,218.3 193.0,218.3 194.7,218.3 196.5,218.3 198.3,218.3 200.0,218.3 201.8,218.3 203.6,218.3 205.3,218.3 207.1,218.3 208.9,218.3 210.6,218.3 212.4,218.3 214.2,218.3 215.9,218.3 217.7,218.3 219.5,218.3 221.2,218.3 223.0,218.3 224.8,218.3 226.5,218.3 226.5,206.7 228.3,206.7 230.1,206.7 231.8,206.7 233.6,206.7 235.4,206.7 237.1,206.7 238.9,206.7 240.7,206.7 242.4,206.7 244.2,206.7 246.0,206.7 247.7,206.7 249.5,206.7 251.3,206.7 253.0,206.7 254.8,206.7 256.6,206.7 258.3,206.7 260.1,206.7 261.9,206.7 263.6,206.7 265.4,206.7 267.2,206.7 268.9,206.7 270.7,206.7 272.5,206.7 274.2,206.7 276.0,206.7 277.8,206.7 279.5,206.7 281.3,206.7 283.1,206.7 284.8,206.7 286.6,206.7 288.4,206.7 290.1,206.7 291.9,206.7 293.7,206.7 295.4,206.7 297.2,206.7 299.0,206.7 300.7,206.7 302.5,206.7 304.3,206.7 306.0,206.7 307.8,206.7 309.6,206.7 311.3,206.7 313.1,206.7 314.9,206.7 316.6,206.7 318.4,206.7 320.2,206.7 321.9,206.7 323.7,206.7 325.5,206.7 327.2,206.7 329.0,206.7 330.8,206.7 332.5,206.7 332.5,195.0 334.3,195.0 336.1,195.0 337.8,195.0 339.6,195.0 341.4,195.0 343.1,195.0 344.9,195.0 346.7,195.0 348.4,195.0 350.2,195.0 352.0,195.0 353.7,195.0 355.5,195.0 357.3,195.0 359.0,195.0 360.8,195.0 362.6,195.0 364.3,195.0 366.1,195.0 367.9,195.0 369.6,195.0 371.4,195.0 373.2,195.0 374.9,195.0 376.7,195.0 378.5,195.0 380.2,195.0 382.0,195.0 383.8,195.0 385.5,195.0 387.3,195.0 389.1,195.0 390.8,195.0 392.6,195.0 394.4,195.0 396.1,195.0 397.9,195.0 399.7,195.0 401.4,195.0 403.2,195.0 405.0,195.0 406.7,195.0 408.5,195.0 410.3,195.0 412.0,195.0 413.8,195.0 415.6,195.0 417.3,195.0 419.1,195.0 420.9,195.0 422.6,195.0 424.4,195.0 426.2,195.0 427.9,195.0 429.7,195.0 431.5,195.0 433.2,195.0 435.0,195.0 436.8,195.0 438.5,195.0 440.3,195.0 442.1,195.0 443.8,195.0 445.6,195.0 447.4,195.0 449.1,195.0 450.9,195.0 452.7,195.0 454.4,195.0 456.2,195.0 458.0,195.0 459.7,195.0 461.5,195.0 463.3,195.0 465.0,195.0 466.8,195.0 468.6,195.0 470.3,195.0 472.1,195.0 473.9,195.0 475.6,195.0 477.4,195.0 479.2,195.0 480.9,195.0 482.7,195.0 484.5,195.0 486.2,195.0 488.0,195.0 489.8,195.0 491.5,195.0 493.3,195.0 495.1,195.0 496.8,195.0 498.6,195.0 500.4,195.0 502.1,195.0 503.9,195.0 505.7,195.0 507.4,195.0 509.2,195.0 511.0,195.0 512.7,195.0 514.5,195.0 516.3,195.0 518.0,195.0 519.8,195.0 521.6,195.0 523.3,195.0 525.1,195.0 526.9,195.0 528.6,195.0 530.4,195.0 532.2,195.0 533.9,195.0 535.7,195.0 537.5,195.0 539.2,195.0 541.0,195.0 542.8,195.0 544.5,195.0 546.3,195.0 548.1,195.0 549.8,195.0 551.6,195.0 553.4,195.0 555.1,195.0 556.9,195.0 558.7,195.0 560.4,195.0 562.2,195.0 564.0,195.0 565.7,195.0 567.5,195.0 569.3,195.0 571.0,195.0 572.8,195.0 574.6,195.0 576.3,195.0 578.1,195.0 579.9,195.0 581.6,195.0 583.4,195.0 585.2,195.0 586.9,195.0 588.7,195.0 590.5,195.0 592.2,195.0 594.0,195.0 595.8,195.0 597.5,195.0 599.3,195.0 601.1,195.0 602.8,195.0 604.6,195.0 606.4,195.0 608.1,195.0 609.9,195.0 611.7,195.0 613.4,195.0 615.2,195.0 617.0,195.0 618.7,195.0 620.5,195.0 622.3,195.0 624.0,195.0 625.8,195.0 627.6,195.0 629.3,195.0 631.1,195.0 632.9,195.0 634.6,195.0 636.4,195.0 638.2,195.0 639.9,195.0 641.7,195.0 643.5,195.0 645.2,195.0 647.0,195.0 648.8,195.0 650.5,195.0 652.3,195.0 652.3,206.7 654.1,206.7 655.8,206.7 657.6,206.7 659.4,206.7 661.1,206.7 662.9,206.7 664.7,206.7 666.4,206.7 668.2,206.7 670.0,206.7 671.7,206.7 673.5,206.7 675.3,206.7 677.0,206.7 678.8,206.7 680.6,206.7 682.3,206.7 684.1,206.7 685.9,206.7 687.6,206.7 689.4,206.7 691.2,206.7 692.9,206.7 694.7,206.7 696.5,206.7 698.2,206.7" class="c-p"/>
+<text x="704" y="210.7" class="fin">13</text>
+<polyline points="64.0,328.5 65.8,328.5 67.5,328.5 69.3,328.5 71.1,328.5 72.8,328.5 74.6,328.5 76.4,328.5 78.1,328.5 79.9,328.5 81.7,328.5 83.4,328.5 85.2,328.5 87.0,328.5 88.7,328.5 90.5,328.5 92.3,328.5 94.0,328.5 95.8,328.5 97.6,328.5 99.3,328.5 101.1,328.5 102.9,328.5 104.6,328.5 106.4,328.5 108.2,328.5 109.9,328.5 111.7,328.5 113.5,328.5 115.2,328.5 117.0,328.5 118.8,328.5 120.5,328.5 122.3,328.5 124.1,328.5 125.8,328.5 127.6,328.5 129.4,328.5 131.1,328.5 132.9,328.5 134.7,328.5 136.4,328.2 138.2,327.9 140.0,327.7 141.7,327.4 143.5,327.1 145.3,326.9 147.0,326.6 148.8,326.3 150.6,326.0 152.3,325.8 154.1,325.5 155.9,325.2 157.6,324.9 159.4,324.6 161.2,324.4 162.9,324.1 164.7,323.8 166.5,323.6 168.2,323.3 170.0,323.0 171.8,322.7 173.5,322.4 175.3,322.2 177.1,321.9 178.8,321.6 180.6,321.4 182.4,321.1 184.1,320.8 185.9,320.5 187.7,320.2 189.4,320.0 191.2,319.7 193.0,319.4 194.7,319.1 196.5,318.9 198.3,318.6 200.0,318.3 201.8,318.1 203.6,317.8 205.3,317.5 207.1,317.2 208.9,316.9 210.6,316.7 212.4,316.4 214.2,316.1 215.9,315.9 217.7,315.6 219.5,315.3 221.2,315.0 223.0,314.8 224.8,314.5 226.5,314.2 228.3,313.9 230.1,313.6 231.8,313.4 233.6,313.1 235.4,312.8 237.1,312.6 238.9,312.3 240.7,312.0 242.4,311.7 244.2,311.4 246.0,311.2 247.7,310.9 249.5,310.6 251.3,310.4 253.0,310.1 254.8,309.8 256.6,309.5 258.3,309.2 260.1,309.0 261.9,308.7 263.6,308.4 265.4,308.1 267.2,307.9 268.9,307.6 270.7,307.3 272.5,307.1 274.2,306.8 276.0,306.5 277.8,306.2 279.5,305.9 281.3,305.7 283.1,305.4 284.8,305.1 286.6,304.9 288.4,304.6 290.1,304.3 291.9,304.0 293.7,303.8 295.4,303.5 297.2,303.2 299.0,302.9 300.7,302.6 302.5,302.4 304.3,302.1 306.0,301.8 307.8,301.6 309.6,301.3 311.3,301.0 313.1,300.7 314.9,300.4 316.6,300.2 318.4,299.9 320.2,299.6 321.9,299.4 323.7,299.1 325.5,298.8 327.2,298.5 329.0,298.2 330.8,298.0 332.5,297.7 334.3,297.4 336.1,297.1 337.8,296.9 339.6,296.6 341.4,296.3 343.1,296.1 344.9,295.8 346.7,295.5 348.4,295.5 350.2,295.5 352.0,295.5 353.7,295.5 355.5,295.5 357.3,295.5 359.0,295.5 360.8,295.5 362.6,295.5 364.3,295.5 366.1,295.5 367.9,295.5 369.6,295.5 371.4,295.5 373.2,295.5 374.9,295.5 376.7,295.5 378.5,295.5 380.2,295.5 382.0,295.5 383.8,295.5 385.5,295.5 387.3,295.5 389.1,295.5 390.8,295.5 392.6,295.5 394.4,295.5 396.1,295.5 397.9,295.5 399.7,295.5 401.4,295.5 403.2,295.5 405.0,295.5 406.7,295.5 408.5,295.5 410.3,295.5 412.0,295.5 413.8,295.5 415.6,295.5 417.3,295.5 419.1,295.5 420.9,295.5 422.6,295.5 424.4,295.5 426.2,295.5 427.9,295.5 429.7,295.5 431.5,295.5 433.2,295.5 435.0,295.5 436.8,295.5 438.5,295.5 440.3,295.5 442.1,295.5 443.8,295.5 445.6,295.5 447.4,295.5 449.1,295.5 450.9,295.5 452.7,295.5 454.4,295.5 456.2,295.5 458.0,295.5 459.7,295.5 461.5,295.5 463.3,295.5 465.0,295.5 466.8,295.5 468.6,295.5 470.3,295.5 472.1,295.5 473.9,295.5 475.6,295.5 477.4,295.5 479.2,295.5 480.9,295.5 482.7,295.5 484.5,295.5 486.2,295.5 488.0,295.5 489.8,295.5 491.5,295.5 493.3,295.5 495.1,295.5 496.8,295.5 498.6,295.5 500.4,295.5 502.1,295.5 503.9,295.5 505.7,295.5 507.4,295.5 509.2,295.5 511.0,295.5 512.7,295.5 514.5,295.5 516.3,295.5 518.0,295.5 519.8,295.5 521.6,295.5 523.3,295.5 525.1,296.0 526.9,296.4 528.6,296.9 530.4,297.3 532.2,297.8 533.9,298.2 535.7,298.7 537.5,299.2 539.2,299.6 541.0,300.1 542.8,300.5 544.5,301.0 546.3,301.5 548.1,301.9 549.8,302.4 551.6,302.8 553.4,303.3 555.1,303.8 556.9,304.2 558.7,304.7 560.4,305.1 562.2,305.6 564.0,306.0 565.7,306.5 567.5,307.0 569.3,307.4 571.0,307.9 572.8,308.3 574.6,308.8 576.3,309.2 578.1,309.7 579.9,310.2 581.6,310.6 583.4,311.1 585.2,311.5 586.9,312.0 588.7,312.5 590.5,312.9 592.2,313.4 594.0,313.8 595.8,314.3 597.5,314.8 599.3,315.2 601.1,315.7 602.8,316.1 604.6,316.6 606.4,317.0 608.1,317.5 609.9,318.0 611.7,318.4 613.4,318.9 615.2,319.3 617.0,319.8 618.7,320.2 620.5,320.7 622.3,321.2 624.0,321.6 625.8,322.1 627.6,322.5 629.3,323.0 631.1,323.0 632.9,323.0 634.6,323.0 636.4,323.0 638.2,323.0 639.9,323.0 641.7,323.0 643.5,323.0 645.2,323.0 647.0,323.0 648.8,323.0 650.5,323.0 652.3,323.0 654.1,323.0 655.8,323.0 657.6,323.0 659.4,323.0 661.1,323.0 662.9,323.0 664.7,323.0 666.4,323.0 668.2,323.0 670.0,323.0 671.7,323.0 673.5,323.0 675.3,323.0 677.0,323.0 678.8,323.0 680.6,323.0 682.3,323.0 684.1,323.0 685.9,323.0 687.6,323.0 689.4,323.0 691.2,323.0 692.9,323.0 694.7,323.0 696.5,323.0 698.2,323.0" class="c-i"/>
+<text x="71.1" y="36" class="annot">au départ, trop bas : tempo 10 s puis « monter »</text>
+<text x="360.8" y="289.5" class="annot">pointe du soir : 900 A</text>
+</svg>
+    </div>
+    <figcaption><b>Figure 2.</b> Réponse du régulateur à la pointe du soir, calculée avec la vraie classe <code>Regulateur</code> du projet. Au départ, la tension est trop basse (19,7 kV) : l'automate monte de 9 à 12. La charge passe ensuite de 300 à 900 A et la tension retombe : il monte jusqu'à 14. Quand la charge redescend, il repasse à 13. Tension en bleu, prise en ambre, charge en pointillés.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2><span class="num">3</span>Le Grafcet du régulateur</h2>
+  <p>Un seul Grafcet pour les deux modes. En AUTO, on passe par la temporisation ; en MANUEL, un appui sur + ou − mène directement à l'ordre.</p>
+  <figure>
+    <div class="dessin">
+    <svg viewBox="0 0 700 660" role="img" aria-labelledby="fig3t">
+      <title id="fig3t">Grafcet du régulateur : étapes 0 attente, 1 temporisation, 2 ordre, 3 manœuvre, 4 défaut</title>
+      <defs>
+        <marker id="pg" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,1 L10,5 L0,9 z" class="pointe"/></marker>
+      </defs>
+      <!-- Étape 0 initiale -->
+      <rect x="278" y="24" width="44" height="44" class="boite"/>
+      <rect x="282" y="28" width="36" height="36" class="boite"/>
+      <text x="300" y="52" class="num-etape" text-anchor="middle">0</text>
+      <text x="334" y="51" class="petit t-g">ATTENTE</text>
+      <line x1="300" y1="68" x2="300" y2="92" class="fil"/>
+      <!-- divergence en OU -->
+      <line x1="300" y1="92" x2="500" y2="92" class="fil"/>
+      <!-- branche AUTO -->
+      <line x1="300" y1="92" x2="300" y2="140" class="fil"/>
+      <line x1="286" y1="116" x2="314" y2="116" class="barre"/>
+      <text x="278" y="112" class="petit" text-anchor="end">AUTO · hors bande</text>
+      <text x="278" y="127" class="petit" text-anchor="end">U ≥ 16 kV · pas en butée</text>
+      <!-- Étape 1 -->
+      <rect x="278" y="140" width="44" height="44" class="boite"/>
+      <text x="300" y="168" class="num-etape" text-anchor="middle">1</text>
+      <line x1="322" y1="162" x2="340" y2="162" class="fil"/>
+      <rect x="340" y="144" width="130" height="36" class="boite"/>
+      <text x="405" y="159" class="petit" text-anchor="middle">TEMPORISATION</text>
+      <text x="405" y="174" class="petit t-g" text-anchor="middle">T1 = 10 s ou T2 = 5 s</text>
+      <!-- sortie de l'étape 1 : divergence en OU -->
+      <line x1="300" y1="184" x2="300" y2="200" class="fil"/>
+      <line x1="190" y1="200" x2="300" y2="200" class="fil"/>
+      <line x1="300" y1="200" x2="300" y2="250" class="fil"/>
+      <line x1="286" y1="222" x2="314" y2="222" class="barre"/>
+      <text x="322" y="227" class="petit">tempo écoulée</text>
+      <!-- retour vers 0 depuis l'étape 1 -->
+      <line x1="190" y1="200" x2="190" y2="248" class="fil"/>
+      <line x1="176" y1="222" x2="204" y2="222" class="barre"/>
+      <text x="168" y="200" class="petit" text-anchor="end">dans la bande</text>
+      <text x="168" y="215" class="petit" text-anchor="end">ou autre sens</text>
+      <text x="168" y="230" class="petit" text-anchor="end">ou MANUEL</text>
+      <text x="168" y="245" class="petit" text-anchor="end">ou U &lt; 16 kV</text>
+      <path d="M190,248 V262 H30 V10 H300 V24" class="fil"/>
+      <line x1="30" y1="140" x2="30" y2="128" class="fil" marker-end="url(#pg)"/>
+      <!-- branche MANUEL -->
+      <line x1="500" y1="92" x2="500" y2="250" class="fil"/>
+      <line x1="486" y1="166" x2="514" y2="166" class="barre"/>
+      <text x="522" y="155" class="petit">MANUEL</text>
+      <text x="522" y="170" class="petit">(BP+ · prise &lt; 17)</text>
+      <text x="522" y="185" class="petit">ou (BP− · prise &gt; 1)</text>
+      <!-- convergence en OU -->
+      <line x1="300" y1="250" x2="500" y2="250" class="fil"/>
+      <line x1="300" y1="250" x2="300" y2="286" class="fil"/>
+      <!-- Étape 2 -->
+      <rect x="278" y="286" width="44" height="44" class="boite"/>
+      <text x="300" y="314" class="num-etape" text-anchor="middle">2</text>
+      <line x1="322" y1="308" x2="340" y2="308" class="fil"/>
+      <rect x="340" y="290" width="230" height="36" class="boite-p"/>
+      <text x="455" y="305" class="petit t-p" text-anchor="middle">ORDRE monter ou descendre</text>
+      <text x="455" y="320" class="petit t-g" text-anchor="middle">tempo défaut (10 s) lancée</text>
+      <line x1="300" y1="330" x2="300" y2="376" class="fil"/>
+      <line x1="286" y1="353" x2="314" y2="353" class="barre"/>
+      <text x="322" y="358" class="petit">manœuvre en cours = 1</text>
+      <!-- Étape 3 -->
+      <rect x="278" y="376" width="44" height="44" class="boite"/>
+      <text x="300" y="404" class="num-etape" text-anchor="middle">3</text>
+      <line x1="322" y1="398" x2="340" y2="398" class="fil"/>
+      <rect x="340" y="380" width="230" height="36" class="boite"/>
+      <text x="455" y="395" class="petit" text-anchor="middle">MANŒUVRE (l'ordre retombe)</text>
+      <text x="455" y="410" class="petit t-g" text-anchor="middle">tempo défaut continue</text>
+      <line x1="300" y1="420" x2="300" y2="462" class="fil"/>
+      <line x1="286" y1="442" x2="314" y2="442" class="barre"/>
+      <text x="322" y="447" class="petit">manœuvre en cours = 0 (compteur + 1)</text>
+      <path d="M300,462 V476 H30 V262" class="fil"/>
+      <!-- Étape 4 défaut (forçage) -->
+      <line x1="60" y1="520" x2="660" y2="520" class="grille" stroke-dasharray="4 4"/>
+      <text x="60" y="548" class="petit t-g">Surveillance de la durée de manœuvre (depuis l'étape 2 ou 3) :</text>
+      <line x1="300" y1="560" x2="300" y2="586" class="fil"/>
+      <line x1="286" y1="572" x2="314" y2="572" class="barre"/>
+      <text x="322" y="577" class="petit">tempo défaut écoulée (10 s)</text>
+      <rect x="278" y="586" width="44" height="44" class="boite"/>
+      <text x="300" y="614" class="num-etape" text-anchor="middle">4</text>
+      <line x1="322" y1="608" x2="340" y2="608" class="fil"/>
+      <rect x="340" y="590" width="230" height="36" class="boite-a"/>
+      <text x="455" y="605" class="petit t-a" text-anchor="middle">DÉFAUT RÉGLEUR : alarme</text>
+      <text x="455" y="620" class="petit t-g" text-anchor="middle">mode forcé en MANUEL</text>
+      <line x1="300" y1="630" x2="300" y2="652" class="fil"/>
+      <line x1="286" y1="642" x2="314" y2="642" class="barre"/>
+      <text x="278" y="647" class="petit" text-anchor="end">acquittement · pas de manœuvre → étape 0</text>
+    </svg>
+    </div>
+    <figcaption><b>Figure 3.</b> Grafcet du régulateur (code des étapes envoyé à l'IHM : 0 à 4). Les ordres « monter » et « descendre » n'existent qu'à l'étape 2. En Python, chaque étape est une branche <code>if / elif</code> de <code>Regulateur.cycle()</code>.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2><span class="num">4</span>Architecture logicielle</h2>
+  <p>Trois programmes échangent en Modbus TCP. La mémoire Modbus est dans l'automate ; la simulation et l'IHM sont des clients qui viennent y lire et écrire.</p>
+  <figure>
+    <div class="dessin">
+    <svg viewBox="0 0 700 250" role="img" aria-labelledby="fig4t">
+      <title id="fig4t">Architecture : simulation, automate avec serveur Modbus, IHM Node-RED</title>
+      <defs>
+        <marker id="pa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="pointe"/></marker>
+      </defs>
+      <!-- automate -->
+      <rect x="230" y="20" width="240" height="210" rx="6" class="boite-u"/>
+      <text x="350" y="46" class="titre-boite" text-anchor="middle">automate.py</text>
+      <rect x="250" y="60" width="200" height="62" rx="4" class="zone"/>
+      <text x="350" y="84" class="petit" text-anchor="middle">Serveur Modbus TCP · port 5020</text>
+      <text x="350" y="104" class="mono t-g" text-anchor="middle">coils + holding registers</text>
+      <rect x="250" y="140" width="200" height="72" rx="4" class="zone"/>
+      <text x="350" y="162" class="petit" text-anchor="middle">Cycle toutes les 100 ms</text>
+      <text x="350" y="182" class="mono" text-anchor="middle">LIRE → TRAITER → ÉCRIRE</text>
+      <text x="350" y="200" class="mono t-g" text-anchor="middle">Regulateur.cycle()</text>
+      <line x1="350" y1="138" x2="350" y2="124" class="fil-fin" marker-start="url(#pa)" marker-end="url(#pa)"/>
+      <!-- simulation -->
+      <rect x="10" y="60" width="170" height="110" rx="6" class="boite-p"/>
+      <text x="95" y="86" class="titre-boite" text-anchor="middle">simulation.py</text>
+      <text x="95" y="108" class="petit t-g" text-anchor="middle">réseau HTB, charge,</text>
+      <text x="95" y="124" class="petit t-g" text-anchor="middle">régleur, « vie réelle »</text>
+      <text x="95" y="150" class="mono t-g" text-anchor="middle">client Modbus</text>
+      <line x1="182" y1="92" x2="248" y2="92" class="fil" marker-start="url(#pa)" marker-end="url(#pa)"/>
+      <text x="215" y="190" class="petit t-g" text-anchor="middle">U_HTA, prise,</text>
+      <text x="215" y="206" class="petit t-g" text-anchor="middle">ordres</text>
+      <!-- IHM -->
+      <rect x="520" y="60" width="170" height="110" rx="6" class="boite"/>
+      <text x="605" y="86" class="titre-boite" text-anchor="middle">IHM Node-RED</text>
+      <text x="605" y="108" class="petit t-g" text-anchor="middle">Dashboard 2.0</text>
+      <text x="605" y="124" class="petit t-g" text-anchor="middle">mesures, réglages, boutons</text>
+      <text x="605" y="150" class="mono t-g" text-anchor="middle">client Modbus</text>
+      <line x1="452" y1="92" x2="518" y2="92" class="fil" marker-start="url(#pa)" marker-end="url(#pa)"/>
+      <text x="485" y="190" class="petit t-g" text-anchor="middle">lecture</text>
+      <text x="485" y="206" class="petit t-g" text-anchor="middle">toutes les 500 ms</text>
+    </svg>
+    </div>
+    <figcaption><b>Figure 4.</b> Le programme de l'automate lit et écrit sa propre mémoire avec un client Modbus, comme les deux autres : il n'y a qu'une seule façon d'échanger dans tout le projet. Toutes les adresses sont dans <code>mapping.py</code>.</figcaption>
+  </figure>
+
+  <div class="deux">
+    <div class="tableau">
+      <table>
+        <thead><tr><th>Coil</th><th>Rôle</th></tr></thead>
+        <tbody>
+          <tr><td>0 · 1</td><td>ordres monter · descendre</td></tr>
+          <tr><td>2</td><td>manœuvre en cours</td></tr>
+          <tr><td>3</td><td>mode AUTO (1) / MANUEL (0)</td></tr>
+          <tr><td>4 · 5 · 6</td><td>boutons + · − · acquittement</td></tr>
+          <tr><td>7 · 8 · 9</td><td>défaut régleur · blocage · butée</td></tr>
+          <tr><td>10</td><td>variations « vie réelle » / curseurs</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tableau">
+      <table>
+        <thead><tr><th>Registre</th><th>Rôle</th></tr></thead>
+        <tbody>
+          <tr><td>0 · 1</td><td>U_HTA (kV × 100) · prise</td></tr>
+          <tr><td>2 · 3</td><td>U_HTB (kV × 10) · charge (A)</td></tr>
+          <tr><td>4 · 5 · 6</td><td>température · heure · jour</td></tr>
+          <tr><td>10 à 13</td><td>consigne · bande morte · T1 · T2</td></tr>
+          <tr><td>20 · 21</td><td>étape du Grafcet · temps restant</td></tr>
+          <tr><td>22 · 23</td><td>compteur de manœuvres · mot de vie</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">5</span>L'IHM (maquette)</h2>
+  <p>Une seule page Dashboard 2.0 : l'état en haut, les commandes et les réglages au milieu, les courbes en bas.</p>
+  <figure>
+    <div class="ihm" aria-label="Maquette de l'IHM, valeurs d'exemple">
+      <div class="ihm-bandeau">Régulation de tension 63 / 20 kV <span>exemple · mar. 14 janv. 18:42</span></div>
+      <div class="ihm-grille">
+        <div class="carte">
+          <h4>Mesures</h4>
+          <div class="gros">20,48 <small>kV</small></div>
+          <div class="val">U HTB <b>63,4 kV</b></div>
+          <div class="val">Charge <b>612 A</b></div>
+          <div class="val">Température <b>4,5 °C</b></div>
+        </div>
+        <div class="carte">
+          <h4>Régleur</h4>
+          <div class="val">Prise <b>12 / 17</b></div>
+          <div class="jauge"><i></i></div>
+          <div class="voyant on">Manœuvre en cours</div>
+          <div class="val">Étape <b>TEMPO</b></div>
+          <div class="val">Ordre dans <b>7 s</b></div>
+          <div class="val">Manœuvres <b>23</b></div>
+        </div>
+        <div class="carte">
+          <h4>Alarmes</h4>
+          <div class="voyant">Défaut régleur</div>
+          <div class="voyant">Blocage U &lt; 16 kV</div>
+          <div class="voyant">Butée</div>
+          <div class="boutons"><span class="bouton">Acquitter</span></div>
+          <div class="val">Mot de vie <b>18452</b></div>
+        </div>
+        <div class="carte">
+          <h4>Commande</h4>
+          <div class="boutons"><span class="bouton actif">Auto</span><span class="bouton">Manuel</span></div>
+          <div class="boutons"><span class="bouton gris">− prise</span><span class="bouton gris">+ prise</span></div>
+          <div class="val" style="color:var(--gris)">+ et − actifs en MANUEL</div>
+        </div>
+        <div class="carte">
+          <h4>Réglages</h4>
+          <div class="val">Consigne <b>20,50 kV</b></div>
+          <div class="val">Bande morte <b>± 1,00 %</b></div>
+          <div class="val">Tempo 1re <b>10 s</b></div>
+          <div class="val">Tempo suivantes <b>5 s</b></div>
+        </div>
+        <div class="carte">
+          <h4>Simulation</h4>
+          <div class="boutons"><span class="bouton actif">Vie réelle</span><span class="bouton">Curseurs</span></div>
+          <div class="curseur">U HTB <i style="--pos:50%"></i> 63 kV</div>
+          <div class="curseur">Charge <i style="--pos:45%"></i> 500 A</div>
+          <div class="curseur">Saison <i style="--pos:4%"></i> janv.</div>
+        </div>
+      </div>
+      <div class="mini">
+        <h4 style="margin:0;font:600 .74rem var(--f-titre);letter-spacing:.1em;text-transform:uppercase;color:var(--gris)">U HTA et bande morte</h4>
+        <svg viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><rect x="0" y="15.8" width="300" height="16.4" class="bande"/><polyline points="0.0,56.0 0.8,56.0 1.7,56.0 2.5,56.0 3.3,56.0 4.2,56.0 5.0,56.0 5.8,56.0 6.7,56.0 7.5,56.0 8.3,56.0 9.2,56.0 10.0,56.0 10.8,56.0 11.7,56.0 12.5,56.0 13.3,56.0 14.2,56.0 15.0,56.0 15.8,56.0 16.7,56.0 17.5,56.0 18.3,56.0 19.2,56.0 20.0,56.0 20.8,56.0 21.7,56.0 22.5,56.0 23.3,56.0 24.2,56.0 25.0,56.0 25.8,46.0 26.7,46.0 27.5,46.0 28.3,46.0 29.2,46.0 30.0,46.0 30.8,46.0 31.7,46.0 32.5,46.0 33.3,46.0 34.2,46.2 35.0,46.4 35.8,46.6 36.7,46.8 37.5,47.0 38.3,47.2 39.2,47.4 40.0,47.6 40.8,47.8 41.7,48.0 42.5,38.2 43.3,38.4 44.2,38.6 45.0,38.8 45.8,39.0 46.7,39.2 47.5,39.4 48.3,39.6 49.2,39.8 50.0,40.0 50.8,40.2 51.7,40.4 52.5,40.6 53.3,40.8 54.2,41.0 55.0,41.2 55.8,41.4 56.7,41.6 57.5,41.8 58.3,42.0 59.2,32.2 60.0,32.4 60.8,32.6 61.7,32.8 62.5,33.0 63.3,33.2 64.2,33.4 65.0,33.6 65.8,33.8 66.7,34.0 67.5,34.2 68.3,34.4 69.2,34.6 70.0,34.8 70.8,35.0 71.7,35.2 72.5,35.4 73.3,35.6 74.2,35.8 75.0,36.0 75.8,36.2 76.7,26.4 77.5,26.6 78.3,26.8 79.2,27.0 80.0,27.2 80.8,27.4 81.7,27.6 82.5,27.8 83.3,28.0 84.2,28.2 85.0,28.4 85.8,28.6 86.7,28.8 87.5,29.0 88.3,29.2 89.2,29.4 90.0,29.6 90.8,29.8 91.7,30.0 92.5,30.2 93.3,30.4 94.2,30.6 95.0,30.8 95.8,31.0 96.7,31.2 97.5,31.4 98.3,31.6 99.2,31.8 100.0,32.0 100.8,32.2 101.7,32.4 102.5,32.6 103.3,32.8 104.2,33.0 105.0,33.2 105.8,33.4 106.7,33.6 107.5,33.8 108.3,34.0 109.2,34.2 110.0,34.4 110.8,34.6 111.7,34.8 112.5,35.0 113.3,35.2 114.2,35.4 115.0,35.6 115.8,35.8 116.7,36.0 117.5,36.2 118.3,36.4 119.2,36.6 120.0,36.8 120.8,37.0 121.7,37.2 122.5,37.4 123.3,37.6 124.2,37.8 125.0,38.0 125.8,38.2 126.7,28.4 127.5,28.6 128.3,28.8 129.2,29.0 130.0,29.2 130.8,29.4 131.7,29.6 132.5,29.8 133.3,30.0 134.2,30.0 135.0,30.0 135.8,30.0 136.7,30.0 137.5,30.0 138.3,30.0 139.2,30.0 140.0,30.0 140.8,30.0 141.7,30.0 142.5,30.0 143.3,30.0 144.2,30.0 145.0,30.0 145.8,30.0 146.7,30.0 147.5,30.0 148.3,30.0 149.2,30.0 150.0,30.0 150.8,30.0 151.7,30.0 152.5,30.0 153.3,30.0 154.2,30.0 155.0,30.0 155.8,30.0 156.7,30.0 157.5,30.0 158.3,30.0 159.2,30.0 160.0,30.0 160.8,30.0 161.7,30.0 162.5,30.0 163.3,30.0 164.2,30.0 165.0,30.0 165.8,30.0 166.7,30.0 167.5,30.0 168.3,30.0 169.2,30.0 170.0,30.0 170.8,30.0 171.7,30.0 172.5,30.0 173.3,30.0 174.2,30.0 175.0,30.0 175.8,30.0 176.7,30.0 177.5,30.0 178.3,30.0 179.2,30.0 180.0,30.0 180.8,30.0 181.7,30.0 182.5,30.0 183.3,30.0 184.2,30.0 185.0,30.0 185.8,30.0 186.7,30.0 187.5,30.0 188.3,30.0 189.2,30.0 190.0,30.0 190.8,30.0 191.7,30.0 192.5,30.0 193.3,30.0 194.2,30.0 195.0,30.0 195.8,30.0 196.7,30.0 197.5,30.0 198.3,30.0 199.2,30.0 200.0,30.0 200.8,30.0 201.7,30.0 202.5,30.0 203.3,30.0 204.2,30.0 205.0,30.0 205.8,30.0 206.7,30.0 207.5,30.0 208.3,30.0 209.2,30.0 210.0,30.0 210.8,30.0 211.7,30.0 212.5,30.0 213.3,30.0 214.2,30.0 215.0,30.0 215.8,30.0 216.7,30.0 217.5,29.7 218.3,29.3 219.2,29.0 220.0,28.7 220.8,28.3 221.7,28.0 222.5,27.7 223.3,27.3 224.2,27.0 225.0,26.7 225.8,26.3 226.7,26.0 227.5,25.7 228.3,25.3 229.2,25.0 230.0,24.7 230.8,24.3 231.7,24.0 232.5,23.7 233.3,23.3 234.2,23.0 235.0,22.7 235.8,22.3 236.7,22.0 237.5,21.7 238.3,21.3 239.2,21.0 240.0,20.7 240.8,20.3 241.7,20.0 242.5,19.7 243.3,19.3 244.2,19.0 245.0,18.7 245.8,18.3 246.7,18.0 247.5,17.7 248.3,17.3 249.2,17.0 250.0,16.7 250.8,16.3 251.7,16.0 252.5,15.7 253.3,15.3 254.2,15.0 255.0,14.7 255.8,14.3 256.7,14.0 257.5,13.7 258.3,13.3 259.2,13.0 260.0,12.7 260.8,12.3 261.7,12.0 262.5,11.7 263.3,11.3 264.2,11.0 265.0,10.7 265.8,10.3 266.7,10.0 267.5,10.0 268.3,10.0 269.2,10.0 270.0,10.0 270.8,10.0 271.7,10.0 272.5,10.0 273.3,10.0 274.2,10.0 275.0,10.0 275.8,10.0 276.7,10.0 277.5,20.0 278.3,20.0 279.2,20.0 280.0,20.0 280.8,20.0 281.7,20.0 282.5,20.0 283.3,20.0 284.2,20.0 285.0,20.0 285.8,20.0 286.7,20.0 287.5,20.0 288.3,20.0 289.2,20.0 290.0,20.0 290.8,20.0 291.7,20.0 292.5,20.0 293.3,20.0 294.2,20.0 295.0,20.0 295.8,20.0 296.7,20.0 297.5,20.0 298.3,20.0 299.2,20.0" class="c-u"/></svg>
+      </div>
+    </div>
+    <figcaption><b>Figure 5.</b> Maquette de l'IHM prévue à l'étape 5 (valeurs d'exemple). Les réglages sont relus après écriture : l'IHM affiche la valeur réellement appliquée par l'automate.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2><span class="num">6</span>À retenir pour l'oral</h2>
+  <div class="oral">
+    <div><b>Pourquoi une bande morte d'au moins ± 0,7 % ?</b><span>Une prise fait varier la tension de 1,25 %. Si la bande est plus étroite qu'une prise, chaque manœuvre fait passer la tension de l'autre côté : le régleur monte et descend sans fin (pompage).</span></div>
+    <div><b>Pourquoi deux temporisations ?</b><span>La 1re (10 s, 30 s en réel) ignore les variations brèves. Les suivantes (5 s) sont plus courtes : on sait déjà qu'il faut plusieurs prises pour rattraper un grand écart.</span></div>
+    <div><b>Pourquoi l'ordre reste à 1 jusqu'à la réponse du régleur ?</b><span>C'est un échange « ordre puis accusé » : un ordre trop court pourrait être perdu entre deux lectures Modbus.</span></div>
+    <div><b>Pourquoi bloquer sous 16 kV ?</b><span>Une tension aussi basse vient d'un défaut ou d'une absence de tension : monter les prises n'y changerait rien et ferait une surtension au retour de la tension.</span></div>
+    <div><b>Pourquoi le défaut régleur passe en MANUEL ?</b><span>Un régleur qui ne finit pas sa manœuvre est peut-être bloqué mécaniquement. On arrête les ordres automatiques et on prévient l'opérateur, qui doit acquitter.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">7</span>Avancement</h2>
+  <ul class="etapes">
+    <li><span class="puce fait">Fait</span><span>Étape 1 : spécification (entrées, sorties, réglages, Grafcet, mapping Modbus)</span></li>
+    <li><span class="puce fait">Fait</span><span>Étape 2 : régulateur sans réseau (<code>Tempo</code>, <code>Regulateur</code>) et 11 tests pytest</span></li>
+    <li><span class="puce">À faire</span><span>Étape 3 : modèle de simulation (transformateur, régleur, « vie réelle ») et tests</span></li>
+    <li><span class="puce">À faire</span><span>Étape 4 : automate et simulation reliés en Modbus TCP</span></li>
+    <li><span class="puce">À faire</span><span>Étape 5 : IHM Node-RED</span></li>
+    <li><span class="puce">À faire</span><span>Étape 6 : README (installation, lancement, démonstration)</span></li>
+  </ul>
+</section>
+
+</main>
