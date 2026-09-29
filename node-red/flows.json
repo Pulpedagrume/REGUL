@@ -1,0 +1,1009 @@
+[
+    {
+        "id": "regul",
+        "type": "tab",
+        "label": "Régulation de tension",
+        "disabled": false,
+        "info": "IHM de la régulation de tension HTB/HTA. Lit et écrit dans l'automate en Modbus TCP (127.0.0.1:5020)."
+    },
+    {
+        "id": "modbus_automate",
+        "type": "modbus-client",
+        "name": "Automate (127.0.0.1:5020)",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "127.0.0.1",
+        "tcpPort": "5020",
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": "9600",
+        "serialDatabits": "8",
+        "serialStopbits": "1",
+        "serialParity": "none",
+        "serialConnectionDelay": "100",
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": "1",
+        "commandDelay": "1",
+        "clientTimeout": "1000",
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": "2000",
+        "parallelUnitIdsAllowed": true,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": false
+    },
+    {
+        "id": "ui_base",
+        "type": "ui-base",
+        "name": "Régulation de tension",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "showPageTitle": true,
+        "navigationStyle": "none",
+        "titleBarStyle": "default"
+    },
+    {
+        "id": "ui_theme",
+        "type": "ui-theme",
+        "name": "Thème régulation",
+        "colors": {
+            "surface": "#263238",
+            "primary": "#1565c0",
+            "bgPage": "#dfe3e8",
+            "groupBg": "#ffffff",
+            "groupOutline": "#c5cbd3"
+        },
+        "sizes": {
+            "density": "compact",
+            "pagePadding": "10px",
+            "groupGap": "10px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "8px"
+        }
+    },
+    {
+        "id": "ui_page",
+        "type": "ui-page",
+        "name": "Régulation",
+        "ui": "ui_base",
+        "path": "/regulation",
+        "icon": "transformer",
+        "layout": "grid",
+        "theme": "ui_theme",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "g_etat",
+        "type": "ui-group",
+        "name": "État du poste",
+        "page": "ui_page",
+        "width": "6",
+        "height": "1",
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "g_jauge",
+        "type": "ui-group",
+        "name": "Tension HTA",
+        "page": "ui_page",
+        "width": "6",
+        "height": "1",
+        "order": 2,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "g_commande",
+        "type": "ui-group",
+        "name": "Commande",
+        "page": "ui_page",
+        "width": "4",
+        "height": "1",
+        "order": 3,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "g_reglages",
+        "type": "ui-group",
+        "name": "Réglages du régulateur",
+        "page": "ui_page",
+        "width": "4",
+        "height": "1",
+        "order": 4,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "g_simulation",
+        "type": "ui-group",
+        "name": "Simulation",
+        "page": "ui_page",
+        "width": "4",
+        "height": "1",
+        "order": 5,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "g_courbes",
+        "type": "ui-group",
+        "name": "Courbes",
+        "page": "ui_page",
+        "width": "12",
+        "height": "1",
+        "order": 6,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "inj_demarrage",
+        "type": "inject",
+        "z": "regul",
+        "name": "Au démarrage",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.1",
+        "topic": "",
+        "x": 140,
+        "y": 60,
+        "wires": [
+            [
+                "fn_adresses"
+            ]
+        ]
+    },
+    {
+        "id": "fn_adresses",
+        "type": "function",
+        "z": "regul",
+        "name": "Table des adresses",
+        "func": "// Copie de mapping.py : les mêmes adresses côté IHM.\n// Si vous changez mapping.py, changez aussi ce tableau.\nglobal.set('adr', {\n    // Coils\n    CO_ORDRE_MONTER: 0,\n    CO_ORDRE_DESCENDRE: 1,\n    CO_MANOEUVRE_EN_COURS: 2,\n    CO_MODE_AUTO: 3,\n    CO_BP_PLUS: 4,\n    CO_BP_MOINS: 5,\n    CO_ACQUITTEMENT: 6,\n    CO_DEFAUT_REGLEUR: 7,\n    CO_BLOCAGE: 8,\n    CO_BUTEE: 9,\n    CO_VARIATIONS_AUTO: 10,\n    // Holding registers\n    HR_U_HTA: 0,        // kV x 100\n    HR_PRISE: 1,\n    HR_U_HTB: 2,        // kV x 10\n    HR_I_CHARGE: 3,     // A\n    HR_TEMPERATURE: 4,  // °C x 10, entier signé\n    HR_HEURE: 5,        // minutes depuis minuit\n    HR_JOUR: 6,         // jour de l'année\n    HR_CONSIGNE: 10,    // kV x 100\n    HR_BANDE_MORTE: 11, // % x 100\n    HR_TEMPO_1: 12,     // s\n    HR_TEMPO_2: 13,     // s\n    HR_ETAPE: 20,\n    HR_TEMPS_RESTANT: 21,\n    HR_NB_MANOEUVRES: 22,\n    HR_MOT_DE_VIE: 23\n});\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "lire_coils",
+        "type": "modbus-read",
+        "z": "regul",
+        "name": "Lire coils 0..15",
+        "topic": "coils",
+        "showStatusActivities": false,
+        "logIOActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "unitid": "1",
+        "dataType": "Coil",
+        "adr": "0",
+        "quantity": "16",
+        "rate": "500",
+        "rateUnit": "ms",
+        "delayOnStart": false,
+        "startDelayTime": "",
+        "server": "modbus_automate",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "x": 150,
+        "y": 140,
+        "wires": [
+            [
+                "fn_etat"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "lire_regs",
+        "type": "modbus-read",
+        "z": "regul",
+        "name": "Lire registres 0..31",
+        "topic": "registres",
+        "showStatusActivities": false,
+        "logIOActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "unitid": "1",
+        "dataType": "HoldingRegister",
+        "adr": "0",
+        "quantity": "32",
+        "rate": "500",
+        "rateUnit": "ms",
+        "delayOnStart": false,
+        "startDelayTime": "",
+        "server": "modbus_automate",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "x": 150,
+        "y": 200,
+        "wires": [
+            [
+                "fn_etat"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "fn_etat",
+        "type": "function",
+        "z": "regul",
+        "name": "Lecture -> widgets",
+        "func": "// Reçoit les coils (topic \"coils\") puis les registres (topic \"registres\") lus dans l'automate\n// et les met en forme pour l'IHM. Une sortie par widget.\nconst a = global.get('adr');\nif (msg.topic === 'coils') { flow.set('co', msg.payload); return null; }\nconst co = flow.get('co');\nif (!co || !a) return null;\nconst hr = msg.payload;\n\nconst signe = v => v > 32767 ? v - 65536 : v;          // entier signé (température)\nconst uHta = hr[a.HR_U_HTA] / 100;\nconst consigne = hr[a.HR_CONSIGNE] / 100;\nconst bandeMorte = hr[a.HR_BANDE_MORTE] / 100;\nconst haut = consigne * (1 + bandeMorte / 100);\nconst bas = consigne * (1 - bandeMorte / 100);\n\n// Date et heure simulées\nconst cumul = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];\nconst noms = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];\nconst jour = hr[a.HR_JOUR];\nlet m = 0;\nwhile (m < 11 && jour > cumul[m + 1]) m++;\nconst minutes = hr[a.HR_HEURE];\nconst deuxChiffres = n => String(n).padStart(2, '0');\n\nconst etat = {\n    t: Date.now(),\n    uHta, consigne, bas, haut,\n    uHtb: hr[a.HR_U_HTB] / 10,\n    charge: hr[a.HR_I_CHARGE],\n    temperature: signe(hr[a.HR_TEMPERATURE]) / 10,\n    date: (jour - cumul[m]) + ' ' + noms[m],\n    heure: deuxChiffres(Math.floor(minutes / 60)) + ':' + deuxChiffres(minutes % 60),\n    prise: hr[a.HR_PRISE],\n    etape: hr[a.HR_ETAPE],\n    tempsRestant: hr[a.HR_TEMPS_RESTANT],\n    nbManoeuvres: hr[a.HR_NB_MANOEUVRES],\n    motDeVie: hr[a.HR_MOT_DE_VIE],\n    modeAuto: co[a.CO_MODE_AUTO],\n    enManoeuvre: co[a.CO_MANOEUVRE_EN_COURS],\n    defaut: co[a.CO_DEFAUT_REGLEUR],\n    blocage: co[a.CO_BLOCAGE],\n    butee: co[a.CO_BUTEE]\n};\n\n// Les widgets de réglage ne reçoivent une valeur que si elle a changé\n// (sinon on écraserait ce que l'opérateur est en train de taper)\nconst dernier = context.get('dernier') || {};\ncontext.set('dernier', dernier);\nconst siChange = (cle, valeur) => {\n    if (dernier[cle] === valeur) return null;\n    dernier[cle] = valeur;\n    return { payload: valeur };\n};\n\nreturn [\n    { payload: etat },                                             // 0 tableau d'état\n    { payload: uHta },                                             // 1 jauge\n    [{ topic: 'U HTA', payload: uHta },                            // 2 courbe de tension\n     { topic: 'Bande haute', payload: haut },\n     { topic: 'Bande basse', payload: bas }],\n    { topic: 'Prise', payload: etat.prise },                       // 3 courbe de prise\n    siChange('auto', co[a.CO_MODE_AUTO]),                          // 4 interrupteur AUTO / MANUEL\n    siChange('vie', co[a.CO_VARIATIONS_AUTO]),                     // 5 interrupteur vie réelle\n    siChange('consigne', consigne),                                // 6 à 9 réglages\n    siChange('bande', bandeMorte),\n    siChange('tempo1', hr[a.HR_TEMPO_1]),\n    siChange('tempo2', hr[a.HR_TEMPO_2]),\n    siChange('htb', etat.uHtb),                                    // 10 à 12 curseurs\n    siChange('charge', etat.charge),\n    siChange('jour', jour)\n];",
+        "outputs": 13,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 170,
+        "wires": [
+            [
+                "tpl_etat"
+            ],
+            [
+                "jauge_u"
+            ],
+            [
+                "courbe_u"
+            ],
+            [
+                "courbe_prise"
+            ],
+            [
+                "sw_mode"
+            ],
+            [
+                "sw_vie"
+            ],
+            [
+                "num_consigne"
+            ],
+            [
+                "num_bande"
+            ],
+            [
+                "num_tempo1"
+            ],
+            [
+                "num_tempo2"
+            ],
+            [
+                "sl_htb"
+            ],
+            [
+                "sl_charge"
+            ],
+            [
+                "sl_jour"
+            ]
+        ]
+    },
+    {
+        "id": "fn_ecrire",
+        "type": "function",
+        "z": "regul",
+        "name": "Widget -> Modbus",
+        "func": "// Transforme l'action d'un widget (msg.topic) en écriture Modbus dans l'automate.\n// fc 5 = écrire 1 coil, fc 6 = écrire 1 registre. Le 3e nombre est l'échelle (valeur Modbus = valeur x échelle).\nconst a = global.get('adr');\nconst T = {\n    mode:     [5, a.CO_MODE_AUTO],\n    vie:      [5, a.CO_VARIATIONS_AUTO],\n    plus:     [5, a.CO_BP_PLUS],\n    moins:    [5, a.CO_BP_MOINS],\n    acquit:   [5, a.CO_ACQUITTEMENT],\n    consigne: [6, a.HR_CONSIGNE, 100],\n    bande:    [6, a.HR_BANDE_MORTE, 100],\n    tempo1:   [6, a.HR_TEMPO_1, 1],\n    tempo2:   [6, a.HR_TEMPO_2, 1],\n    htb:      [6, a.HR_U_HTB, 10],\n    charge:   [6, a.HR_I_CHARGE, 1],\n    jour:     [6, a.HR_JOUR, 1]\n};\nconst t = T[msg.topic];\nif (!t) return null;\nconst valeur = t[0] === 5 ? !!msg.payload\n                          : Math.max(0, Math.min(65535, Math.round(Number(msg.payload) * t[2])));\nreturn { payload: { fc: t[0], address: t[1], value: valeur, quantity: 1, unitid: 1 } };",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1150,
+        "y": 400,
+        "wires": [
+            [
+                "ecrire"
+            ]
+        ]
+    },
+    {
+        "id": "ecrire",
+        "type": "modbus-flex-write",
+        "z": "regul",
+        "name": "Écrire dans l'automate",
+        "showStatusActivities": true,
+        "showErrors": true,
+        "showWarnings": true,
+        "server": "modbus_automate",
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "delayOnStart": false,
+        "startDelayTime": "",
+        "x": 1370,
+        "y": 400,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "tpl_etat",
+        "type": "ui-template",
+        "z": "regul",
+        "group": "g_etat",
+        "page": "",
+        "ui": "",
+        "name": "Tableau d'état",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div class=\"etat\">\n    <!-- Bandeau : communication et mode -->\n    <div class=\"bandeau\">\n      <span :class=\"['pastille', enLigne ? 'ok' : 'ko']\">{{ enLigne ? 'Automate en ligne' : 'Communication perdue' }}</span>\n      <span v-if=\"e\" class=\"pastille neutre\">{{ e.modeAuto ? 'AUTOMATIQUE' : 'MANUEL' }}</span>\n      <span v-if=\"e\" class=\"horloge\">{{ e.date }} · {{ e.heure }}</span>\n    </div>\n\n    <div v-if=\"e\" class=\"corps\">\n      <!-- Tension et prise -->\n      <div class=\"principal\">\n        <div class=\"legende\">Tension du jeu de barres HTA</div>\n        <div :class=\"['gros', couleurTension]\">{{ e.uHta.toFixed(2) }}<small> kV</small></div>\n        <div class=\"legende\">consigne {{ e.consigne.toFixed(2) }} kV · bande {{ e.bas.toFixed(2) }} à {{ e.haut.toFixed(2) }} kV</div>\n      </div>\n      <div class=\"principal\">\n        <div class=\"legende\">Prise du régleur</div>\n        <div class=\"gros prise\">{{ e.prise }}<small> / 17</small></div>\n        <div class=\"barre\"><div class=\"remplissage\" :style=\"{ width: (e.prise - 1) / 16 * 100 + '%' }\"></div><div class=\"neutre-trait\"></div></div>\n      </div>\n\n      <!-- Mesures du procédé -->\n      <div class=\"lignes\">\n        <div><span>Tension HTB</span><b>{{ e.uHtb.toFixed(1) }} kV</b></div>\n        <div><span>Charge du poste</span><b>{{ e.charge }} A</b></div>\n        <div><span>Température</span><b>{{ e.temperature.toFixed(1) }} °C</b></div>\n        <div><span>Manœuvres effectuées</span><b>{{ e.nbManoeuvres }}</b></div>\n        <div><span>Mot de vie</span><b>{{ e.motDeVie }}</b></div>\n      </div>\n\n      <!-- Étape du régulateur -->\n      <div class=\"etape\">\n        <span class=\"legende\">Étape du régulateur</span>\n        <b>{{ nomEtape }}</b>\n        <span v-if=\"e.etape === 1\" class=\"reste\">ordre dans {{ e.tempsRestant }} s</span>\n      </div>\n\n      <!-- Voyants -->\n      <div class=\"voyants\">\n        <span :class=\"['voyant', e.enManoeuvre ? 'bleu' : '']\">Manœuvre en cours</span>\n        <span :class=\"['voyant', e.defaut ? 'rouge clignote' : '']\">Défaut régleur</span>\n        <span :class=\"['voyant', e.blocage ? 'orange' : '']\">Blocage U &lt; 16 kV</span>\n        <span :class=\"['voyant', e.butee ? 'orange' : '']\">Butée (prise 1 ou 17)</span>\n      </div>\n    </div>\n    <div v-else class=\"attente\">En attente des données de l'automate...</div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data() {\n    return { maintenant: Date.now(), timer: null }\n  },\n  computed: {\n    // msg est le dernier message reçu par ce widget : msg.payload = l'état mis en forme par Node-RED\n    e() { return this.msg && this.msg.payload ? this.msg.payload : null },\n    // Si plus aucun message n'arrive depuis 3 s, la communication avec l'automate est perdue\n    enLigne() { return !!this.e && this.maintenant - this.e.t < 3000 },\n    nomEtape() {\n      return ['ATTENTE', 'TEMPORISATION', 'ORDRE ENVOYÉ', 'MANŒUVRE', 'DÉFAUT RÉGLEUR'][this.e.etape] || '?'\n    },\n    couleurTension() {\n      const e = this.e\n      if (e.uHta < 16) return 'rouge'\n      if (e.uHta < e.bas || e.uHta > e.haut) return 'orange'\n      return 'vert'\n    }\n  },\n  mounted() {\n    this.timer = setInterval(() => { this.maintenant = Date.now() }, 1000)\n  },\n  unmounted() {\n    clearInterval(this.timer)\n  }\n}\n</script>\n\n<style scoped>\n.etat { display: flex; flex-direction: column; gap: 12px; font-size: 14px; }\n.bandeau { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }\n.pastille { padding: 3px 10px; border-radius: 12px; font-weight: 600; font-size: 12px; }\n.pastille.ok { background: #e3f4e6; color: #1b5e20; }\n.pastille.ko { background: #fdeaea; color: #b71c1c; }\n.pastille.neutre { background: #e8eef6; color: #1a3a5c; }\n.horloge { margin-left: auto; font-variant-numeric: tabular-nums; color: #546e7a; }\n.corps { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }\n.principal { background: #f4f6f8; border-radius: 4px; padding: 8px 12px; }\n.legende { font-size: 12px; color: #607d8b; }\n.gros { font-size: 40px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }\n.gros small { font-size: 16px; font-weight: 500; color: #607d8b; }\n.gros.vert { color: #2e7d32; }\n.gros.orange { color: #ef6c00; }\n.gros.rouge { color: #c62828; }\n.gros.prise { color: #1565c0; }\n.barre { position: relative; height: 8px; background: #dde3e8; border-radius: 4px; margin-top: 6px; }\n.remplissage { height: 100%; background: #1565c0; border-radius: 4px; }\n.neutre-trait { position: absolute; left: 50%; top: -3px; width: 2px; height: 14px; background: #37474f; }\n.lignes { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 4px 16px; }\n.lignes div { display: flex; justify-content: space-between; border-bottom: 1px solid #e3e8ec; padding: 2px 0; }\n.lignes span { color: #607d8b; }\n.lignes b { font-variant-numeric: tabular-nums; }\n.etape { grid-column: 1 / -1; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }\n.etape b { font-size: 16px; }\n.reste { color: #ef6c00; font-weight: 600; }\n.voyants { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; }\n.voyant { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 12px; background: #eceff1; color: #78909c; font-size: 12px; }\n.voyant::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #b0bec5; }\n.voyant.bleu { background: #e3eefb; color: #0d47a1; }\n.voyant.bleu::before { background: #1565c0; }\n.voyant.orange { background: #fff1de; color: #a04a00; }\n.voyant.orange::before { background: #ef6c00; }\n.voyant.rouge { background: #fdeaea; color: #b71c1c; }\n.voyant.rouge::before { background: #c62828; }\n.clignote::before { animation: clignote 1s steps(2, start) infinite; }\n@keyframes clignote { to { visibility: hidden; } }\n.attente { color: #607d8b; padding: 12px 0; }\n@media (max-width: 560px) { .corps { grid-template-columns: 1fr; } }\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": false,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 820,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "jauge_u",
+        "type": "ui-gauge",
+        "z": "regul",
+        "name": "U HTA",
+        "group": "g_jauge",
+        "order": 1,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 6,
+        "height": 4,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "U HTA",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "kV",
+        "icon": "",
+        "prefix": "",
+        "suffix": " kV",
+        "segments": [
+            {
+                "color": "#c62828",
+                "from": 16
+            },
+            {
+                "color": "#f9a825",
+                "from": 19
+            },
+            {
+                "color": "#2e7d32",
+                "from": 20
+            },
+            {
+                "color": "#f9a825",
+                "from": 21
+            },
+            {
+                "color": "#c62828",
+                "from": 22
+            }
+        ],
+        "min": 16,
+        "max": 24,
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 820,
+        "y": 110,
+        "wires": []
+    },
+    {
+        "z": "regul",
+        "id": "sw_mode",
+        "type": "ui-switch",
+        "name": "Mode AUTOMATIQUE (sinon MANUEL)",
+        "label": "Mode AUTOMATIQUE (sinon MANUEL)",
+        "group": "g_commande",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": false,
+        "topic": "mode",
+        "topicType": "str",
+        "style": "",
+        "className": "",
+        "layout": "row-spread",
+        "clickableArea": "switch",
+        "onvalue": true,
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": false,
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "x": 820,
+        "y": 170,
+        "wires": [
+            [
+                "fn_ecrire"
+            ]
+        ]
+    },
+    {
+        "z": "regul",
+        "id": "btn_moins",
+        "type": "ui-button",
+        "name": "− prise",
+        "label": "− prise",
+        "group": "g_commande",
+        "order": 2,
+        "width": 2,
+        "height": 0,
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "true",
+        "payloadType": "bool",
+        "topic": "moins",
+        "topicType": "str",
+        "buttonColor": "#1565c0",
+        "textColor": "",
+        "iconColor": "",
+        "enableClick": true,
+        "enablePointerdown": false,
+        "pointerdownPayload": "",
+        "pointerdownPayloadType": "str",
+        "enablePointerup": false,
+        "pointerupPayload": "",
+        "pointerupPayloadType": "str",
+        "x": 820,
+        "y": 210,
+        "wires": [
+            [
+                "fn_ecrire"
+            ]
+        ]
+    },
+    {
+        "z": "regul",
+        "id": "btn_plus",
+        "type": "ui-button",
+        "name": "+ prise",
+        "label": "+ prise",
+        "group": "g_commande",
+        "order": 3,
+        "width": 2,
+        "height": 0,
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "true",
+        "payloadType": "bool",
+        "topic": "plus",
+        "topicType": "str",
+        "buttonColor": "#1565c0",
+        "textColor": "",
+        "iconColor": "",
+        "enableClick": true,
+        "enablePointerdown": false,
+        "pointerdownPayload": "",
+        "pointerdownPayloadType": "str",
+        "enablePointerup": false,
+        "pointerupPayload": "",
+        "pointerupPayloadType": "str",
+        "x": 820,
+        "y": 250,
+        "wires": [
+            [
+                "fn_ecrire"
+            ]
+        ]
+    },
+    {
+        "z": "regul",
+        "id": "btn_acquit",
+        "type": "ui-button",
+        "name": "Acquitter le défaut",
+        "label": "Acquitter le défaut",
+        "group": "g_commande",
+        "order": 4,
+        "width": 4,
+        "height": 0,
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "true",
+        "payloadType": "bool",
+        "topic": "acquit",
+        "topicType": "str",
+        "buttonColor": "#1565c0",
+        "textColor": "",
+        "iconColor": "",
+        "enableClick": true,
+        "enablePointerdown": false,
+        "pointerdownPayload": "",
+        "pointerdownPayloadType": "str",
+        "enablePointerup": false,
+        "pointerupPayload": "",
+        "pointerupPayloadType": "str",
+        "x": 820,
+        "y": 290,
+        "wires": [
+            [
+                "fn_ecrire"
+            ]
+        ]
+    },
+    {
+        "z": "regul",
+        "id": "num_consigne",
+        "type": "ui-number-input",
+        "name": "Consigne (kV)",
+        "label": "Consigne (kV)",
+        "group": "g_reglages",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "topic": "consigne",
+        "topicType": "str",
+        "min": 19,
+        "max": 22,
+        "step": 0.05,
+        "tooltip": "",
+        "delay": 300,
+        "passthru": false,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "spinner": "default",
+        "x": 820,
+        "y": 330,
+        "wires": [
+            [
+                "fn_ecrire"
+            ]
+        ]
+    },
+    {
+        "z": "regul",
+        "id": "num_bande",
+        "type": "ui-number-input",
+        "name": "Bande morte (± %)",
+        "label": "Bande morte (± %)",
+        "group": "g_reglages",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "topic": "bande",
+        "topicType": "str",
+        "min": 0.7,
+        "max": 5,
+        "step": 0.1,
+        "tooltip": "",
+        "delay": 300,
+        "passthru": false,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "spinner": "default",
+        "x": 820,
+        "y": 370,
+        "wires": [
+            [
+                "fn_ecrire"
+            ]
+        ]
+    },
+    {
+        "z": "regul",
+        "id": "num_tempo1",
+        "type": "ui-number-input",
+        "name": "Tempo 1re manœuvre (s)",
+        "label": "Tempo 1re manœuvre (s)",
+        "group": "g_reglages",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "topic": "tempo1",
+        "topicType": "str",
+        "min": 1,
+        "max": 120,
+        "step": 1,
+        "tooltip": "",
+        "delay": 300,
+        "passthru": false,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "spinner": "default",
+        "x": 820,
+        "y": 410,
+        "wires": [
+            [
+                "fn_ecrire"
+            ]
+        ]
+    },
+    {
+        "z": "regul",
+        "id": "num_tempo2",
+        "type": "ui-number-input",
+        "name": "Tempo manœuvres suivantes (s)",
+        "label": "Tempo manœuvres suivantes (s)",
+        "group": "g_reglages",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "topic": "tempo2",
+        "topicType": "str",
+        "min": 1,
+        "max": 120,
+        "step": 1,
+        "tooltip": "",
+        "delay": 300,
+        "passthru": false,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "spinner": "default",
+        "x": 820,
+        "y": 450,
+        "wires": [
+            [
+                "fn_ecrire"
+            ]
+        ]
+    },
+    {
+        "z": "regul",
+        "id": "sw_vie",
+        "type": "ui-switch",
+        "name": "Vie réelle (sinon curseurs)",
+        "label": "Vie réelle (sinon curseurs)",
+        "group": "g_simulation",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": false,
+        "topic": "vie",
+        "topicType": "str",
+        "style": "",
+        "className": "",
+        "layout": "row-spread",
+        "clickableArea": "switch",
+        "onvalue": true,
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": false,
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "x": 820,
+        "y": 490,
+        "wires": [
+            [
+                "fn_ecrire"
+            ]
+        ]
+    },
+    {
+        "z": "regul",
+        "id": "sl_htb",
+        "type": "ui-slider",
+        "name": "U HTB (kV)",
+        "label": "U HTB (kV)",
+        "tooltip": "",
+        "group": "g_simulation",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "htb",
+        "topicType": "str",
+        "thumbLabel": true,
+        "showTicks": "false",
+        "min": 55,
+        "max": 70,
+        "step": 0.1,
+        "className": "",
+        "iconPrepend": "",
+        "iconAppend": "",
+        "color": "",
+        "colorTrack": "",
+        "colorThumb": "",
+        "showTrack": true,
+        "x": 820,
+        "y": 530,
+        "wires": [
+            [
+                "fn_ecrire"
+            ]
+        ]
+    },
+    {
+        "z": "regul",
+        "id": "sl_charge",
+        "type": "ui-slider",
+        "name": "Charge (A)",
+        "label": "Charge (A)",
+        "tooltip": "",
+        "group": "g_simulation",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "charge",
+        "topicType": "str",
+        "thumbLabel": true,
+        "showTicks": "false",
+        "min": 0,
+        "max": 1200,
+        "step": 10,
+        "className": "",
+        "iconPrepend": "",
+        "iconAppend": "",
+        "color": "",
+        "colorTrack": "",
+        "colorThumb": "",
+        "showTrack": true,
+        "x": 820,
+        "y": 570,
+        "wires": [
+            [
+                "fn_ecrire"
+            ]
+        ]
+    },
+    {
+        "z": "regul",
+        "id": "sl_jour",
+        "type": "ui-slider",
+        "name": "Jour de l'année",
+        "label": "Jour de l'année",
+        "tooltip": "",
+        "group": "g_simulation",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "jour",
+        "topicType": "str",
+        "thumbLabel": true,
+        "showTicks": "false",
+        "min": 1,
+        "max": 365,
+        "step": 1,
+        "className": "",
+        "iconPrepend": "",
+        "iconAppend": "",
+        "color": "",
+        "colorTrack": "",
+        "colorThumb": "",
+        "showTrack": true,
+        "x": 820,
+        "y": 610,
+        "wires": [
+            [
+                "fn_ecrire"
+            ]
+        ]
+    },
+    {
+        "id": "courbe_u",
+        "type": "ui-chart",
+        "z": "regul",
+        "group": "g_courbes",
+        "name": "Tension HTA et bande morte (kV)",
+        "label": "Tension HTA et bande morte (kV)",
+        "order": 1,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "kV",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "18",
+        "ymax": "23",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "false",
+        "pointRadius": 0,
+        "showLegend": true,
+        "removeOlder": "10",
+        "removeOlderUnit": "60",
+        "removeOlderPoints": "",
+        "colors": [
+            "#1565c0",
+            "#2e7d32",
+            "#2e7d32"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 12,
+        "height": 5,
+        "className": "",
+        "interpolation": "linear",
+        "x": 820,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "courbe_prise",
+        "type": "ui-chart",
+        "z": "regul",
+        "group": "g_courbes",
+        "name": "Prise du régleur",
+        "label": "Prise du régleur",
+        "order": 2,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "prise",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "1",
+        "ymax": "17",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "false",
+        "pointRadius": 0,
+        "showLegend": true,
+        "removeOlder": "10",
+        "removeOlderUnit": "60",
+        "removeOlderPoints": "",
+        "colors": [
+            "#ef6c00"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 12,
+        "height": 4,
+        "className": "",
+        "interpolation": "step",
+        "x": 820,
+        "y": 210,
+        "wires": [
+            []
+        ]
+    }
+]
