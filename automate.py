@@ -5,18 +5,59 @@ Partie 1 (ce qui suit) : le PROGRAMME de l'automate, sans aucun réseau.
     - Regulateur  : le Grafcet du régulateur (voir docs/specification.md).
     On peut le tester seul avec pytest (tests/test_automate.py).
 
-Partie 2 (étape 4) : serveur Modbus TCP + cycle LIRE -> TRAITER -> ÉCRIRE.
+Partie 2 : serveur Modbus TCP + cycle LIRE -> TRAITER -> ÉCRIRE.
+    Lancement :  uv run automate.py
+
+    Le serveur Modbus (la « mémoire » de l'automate) tourne dans un thread.
+    La simulation et Node-RED viennent y lire et écrire. Le programme de
+    l'automate y accède avec un client Modbus, comme les autres : il n'y a
+    qu'une seule façon d'échanger dans tout le projet.
 
 Le temps est compté en millisecondes (dt_ms = durée du cycle).
 """
 
+import threading
+import time
+
+from pymodbus.client import ModbusTcpClient
+from pymodbus.exceptions import ModbusException
+from pymodbus.server import StartTcpServer
+from pymodbus.simulator import DataType, SimData, SimDevice
+
 from mapping import (
+    CO_ACQUITTEMENT,
+    CO_BLOCAGE,
+    CO_BP_MOINS,
+    CO_BP_PLUS,
+    CO_BUTEE,
+    CO_DEFAUT_REGLEUR,
+    CO_MANOEUVRE_EN_COURS,
+    CO_MODE_AUTO,
+    CO_ORDRE_DESCENDRE,
+    CO_ORDRE_MONTER,
+    ECHELLE_BANDE_MORTE,
+    ECHELLE_U_HTA,
     ETAPE_ATTENTE,
     ETAPE_DEFAUT,
     ETAPE_MANOEUVRE,
     ETAPE_ORDRE,
     ETAPE_TEMPORISATION,
+    HR_BANDE_MORTE,
+    HR_CONSIGNE,
+    HR_ETAPE,
+    HR_MOT_DE_VIE,
+    HR_NB_MANOEUVRES,
+    HR_PRISE,
+    HR_TEMPO_1,
+    HR_TEMPO_2,
+    HR_TEMPS_RESTANT,
+    HR_U_HTA,
+    NB_COILS,
+    NB_REGISTRES,
+    PORT,
 )
+
+CYCLE_MS = 100
 
 # Constantes (non réglables depuis l'IHM)
 PRISE_MIN = 1
@@ -170,3 +211,102 @@ class Regulateur:
         self.ordre_monter = self.etape == ETAPE_ORDRE and self.sens == +1
         self.ordre_descendre = self.etape == ETAPE_ORDRE and self.sens == -1
         self.defaut = self.etape == ETAPE_DEFAUT
+
+
+# ---------------------------------------------------------------------------
+# Partie 2 : serveur Modbus et cycle de l'automate
+# ---------------------------------------------------------------------------
+def demarrer_serveur():
+    """Crée la mémoire Modbus (coils + registres) et lance le serveur dans un thread."""
+    memoire = SimDevice(
+        id=0,  # 0 = répond quel que soit le numéro d'esclave demandé
+        simdata=(
+            [SimData(0, count=NB_COILS, values=False, datatype=DataType.BITS)],       # coils
+            [SimData(0, count=1, values=False, datatype=DataType.BITS)],              # discrete inputs (inutilisés)
+            [SimData(0, count=NB_REGISTRES, values=0, datatype=DataType.REGISTERS)],  # holding registers
+            [SimData(0, count=1, values=0, datatype=DataType.REGISTERS)],             # input registers (inutilisés)
+        ),
+    )
+    serveur = threading.Thread(
+        target=StartTcpServer,
+        args=(memoire,),
+        kwargs={"address": ("0.0.0.0", PORT)},
+        daemon=True,  # le thread s'arrête avec le programme
+    )
+    serveur.start()
+
+
+def reglages_en_registres(reg):
+    """Les 4 réglages appliqués, dans l'ordre de la mémoire (HR 10 à 13)."""
+    return [round(reg.consigne * ECHELLE_U_HTA), round(reg.bande_morte * ECHELLE_BANDE_MORTE),
+            reg.tempo_1, reg.tempo_2]
+
+
+def main():
+    demarrer_serveur()
+    time.sleep(0.5)  # laisse au serveur le temps de démarrer
+
+    client = ModbusTcpClient("127.0.0.1", port=PORT)
+    client.connect()
+
+    regulateur = Regulateur()
+    # Valeurs de départ visibles par l'IHM
+    client.write_registers(HR_CONSIGNE, reglages_en_registres(regulateur))
+    client.write_coil(CO_MODE_AUTO, True)
+    print(f"Automate démarré : serveur Modbus TCP sur le port {PORT}, cycle {CYCLE_MS} ms")
+
+    mot_de_vie = 0
+    precedent = time.monotonic()
+
+    while True:
+        debut = time.monotonic()
+        dt_ms = round((debut - precedent) * 1000)  # durée réelle depuis le cycle précédent
+        precedent = debut
+        try:
+            # ---------- 1. LECTURE DES ENTRÉES ----------
+            co = client.read_coils(0, count=NB_COILS).bits
+            hr = client.read_holding_registers(0, count=NB_REGISTRES).registers
+
+            # ---------- 2. TRAITEMENT ----------
+            lus = hr[HR_CONSIGNE:HR_CONSIGNE + 4]
+            regulateur.regler(lus[0] / ECHELLE_U_HTA, lus[1] / ECHELLE_BANDE_MORTE, lus[2], lus[3])
+            regulateur.cycle(u_hta=hr[HR_U_HTA] / ECHELLE_U_HTA,
+                             prise=hr[HR_PRISE],
+                             manoeuvre_en_cours=co[CO_MANOEUVRE_EN_COURS],
+                             mode_auto=co[CO_MODE_AUTO],
+                             bp_plus=co[CO_BP_PLUS],
+                             bp_moins=co[CO_BP_MOINS],
+                             acquittement=co[CO_ACQUITTEMENT],
+                             dt_ms=dt_ms)
+
+            # ---------- 3. ÉCRITURE DES SORTIES ----------
+            client.write_coils(CO_ORDRE_MONTER, [regulateur.ordre_monter, regulateur.ordre_descendre])
+            client.write_coils(CO_DEFAUT_REGLEUR, [regulateur.defaut, regulateur.blocage, regulateur.butee])
+            mot_de_vie = (mot_de_vie + 1) % 65536
+            client.write_registers(HR_ETAPE, [regulateur.etape, regulateur.temps_restant(),
+                                              regulateur.nb_manoeuvres, mot_de_vie])
+
+            # Sur défaut, l'automate passe lui-même en MANUEL
+            if regulateur.mode_auto != co[CO_MODE_AUTO]:
+                client.write_coil(CO_MODE_AUTO, regulateur.mode_auto)
+
+            # Réglages hors plage : on réécrit la valeur réellement appliquée
+            if lus != reglages_en_registres(regulateur):
+                client.write_registers(HR_CONSIGNE, reglages_en_registres(regulateur))
+
+            # Les boutons et l'acquittement sont des impulsions : on les remet à 0
+            for adresse in (CO_BP_PLUS, CO_BP_MOINS, CO_ACQUITTEMENT):
+                if co[adresse]:
+                    client.write_coil(adresse, False)
+
+        except ModbusException as erreur:
+            print(f"Erreur Modbus : {erreur}")
+            client.connect()
+
+        # Attendre la fin du cycle
+        duree = time.monotonic() - debut
+        time.sleep(max(0.0, CYCLE_MS / 1000 - duree))
+
+
+if __name__ == "__main__":
+    main()

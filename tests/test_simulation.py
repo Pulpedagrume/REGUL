@@ -24,6 +24,10 @@ def test_tension_hta_chute_en_charge():
     assert tension_hta(60, 9, 0) < tension_hta(63, 9, 0)
 
 
+def test_tension_hta_jamais_negative():
+    assert tension_hta(0, 9, 800) == 0.0                # perte de la HTB : pas de tension négative
+
+
 def test_regleur_au_repos():
     r = Regleur()
     r.cycle(False, False, 1)

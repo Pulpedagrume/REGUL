@@ -6,13 +6,38 @@ Partie 1 (ce qui suit) : le MODÈLE, sans aucun réseau. On peut le tester seul
     - Regleur     : le régleur en charge (une manœuvre dure 5 s) ;
     - VieReelle   : U_HTB, charge et température qui varient comme dans la vraie vie.
 
-Partie 2 (étape 4) : client Modbus qui fait tourner le modèle.
+Partie 2 : client Modbus qui fait tourner le modèle.
+    Lancement :  uv run simulation.py   (après avoir lancé l'automate)
 
 Le temps est compté en secondes (dt_s = durée du cycle).
 """
 
 import math
 import random
+import time
+
+from pymodbus.client import ModbusTcpClient
+from pymodbus.exceptions import ModbusException
+
+from mapping import (
+    CO_MANOEUVRE_EN_COURS,
+    CO_ORDRE_DESCENDRE,
+    CO_ORDRE_MONTER,
+    CO_VARIATIONS_AUTO,
+    ECHELLE_TEMPERATURE,
+    ECHELLE_U_HTA,
+    ECHELLE_U_HTB,
+    HR_I_CHARGE,
+    HR_JOUR,
+    HR_TEMPERATURE,
+    HR_U_HTA,
+    HR_U_HTB,
+    NB_COILS,
+    NB_REGISTRES,
+    PORT,
+)
+
+PAS_S = 0.1                 # cycle de la simulation
 
 PRISE_MIN = 1
 PRISE_NEUTRE = 9
@@ -29,7 +54,7 @@ JOURS_PAR_JOUR = 15         # le calendrier avance de 15 jours par journée simu
 def tension_hta(u_htb, prise, i_charge):
     """Tension du jeu de barres HTA (kV) : rapport de transformation moins chute en charge."""
     rapport = U_HTA_NOMINALE * (u_htb / U_HTB_NOMINALE)
-    return rapport * (1 + PAS_PRISE * (prise - PRISE_NEUTRE)) - K_CHUTE * i_charge
+    return max(0.0, rapport * (1 + PAS_PRISE * (prise - PRISE_NEUTRE)) - K_CHUTE * i_charge)  # jamais négative
 
 
 class Regleur:
@@ -92,3 +117,74 @@ class VieReelle:
         self.i_charge = max(100, 500 + 250 * hiver + 200 * soir + 60 * self.alea_charge)
         self.u_htb = U_HTB_NOMINALE - 1.0 * soir + 1.0 * self.alea_htb   # plus basse aux heures de pointe
         self.temperature = 12 - 9 * hiver + 4 * math.cos(2 * math.pi * (self.heure - 15) / 24)
+
+
+# ---------------------------------------------------------------------------
+# Partie 2 : client Modbus
+# ---------------------------------------------------------------------------
+def main():
+    client = ModbusTcpClient("127.0.0.1", port=PORT)
+    client.connect()
+
+    vie = VieReelle()
+    regleur = Regleur()
+    # Valeurs de départ : vie réelle en marche, calendrier au jour de départ
+    client.write_coil(CO_VARIATIONS_AUTO, True)
+    client.write_register(HR_JOUR, vie.jour)
+    dernier_jour = vie.jour
+    print(f"Simulation démarrée : connectée à l'automate sur le port {PORT}")
+
+    precedent = time.monotonic()
+    dernier_affichage = 0.0
+
+    while True:
+        debut = time.monotonic()
+        dt_s = debut - precedent        # durée réelle depuis le cycle précédent
+        precedent = debut
+        try:
+            # ---------- 1. LECTURE : ordres de l'automate, curseurs et jour de l'IHM ----------
+            co = client.read_coils(0, count=NB_COILS).bits
+            hr = client.read_holding_registers(0, count=NB_REGISTRES).registers
+            vie_auto = co[CO_VARIATIONS_AUTO]
+            jour_lu = hr[HR_JOUR]
+            if jour_lu != dernier_jour:         # l'IHM a changé le jour : on saute de saison
+                vie.jour = max(1, min(365, jour_lu))
+
+            # ---------- 2. ÉVOLUTION DU POSTE ----------
+            if vie_auto:
+                vie.cycle(dt_s)                 # sinon les curseurs de l'IHM fixent U_HTB et la charge
+                u_htb, i_charge = vie.u_htb, vie.i_charge
+            else:
+                u_htb, i_charge = hr[HR_U_HTB] / ECHELLE_U_HTB, hr[HR_I_CHARGE]
+            regleur.cycle(co[CO_ORDRE_MONTER], co[CO_ORDRE_DESCENDRE], dt_s)
+            u_hta = tension_hta(u_htb, regleur.prise, i_charge)
+
+            # ---------- 3. ÉCRITURE : mesures vers l'automate et l'IHM ----------
+            client.write_coil(CO_MANOEUVRE_EN_COURS, regleur.en_manoeuvre)
+            client.write_registers(HR_U_HTA, [round(u_hta * ECHELLE_U_HTA), regleur.prise])
+            if vie_auto:                        # en mode curseurs, ce sont les curseurs qui écrivent
+                client.write_registers(HR_U_HTB, [round(u_htb * ECHELLE_U_HTB), round(i_charge)])
+                client.write_registers(HR_TEMPERATURE, [
+                    round(vie.temperature * ECHELLE_TEMPERATURE) % 65536,   # entier signé : complément à 2
+                    round(vie.heure * 60),
+                ])
+            if vie.jour != jour_lu:             # on n'écrit le jour que s'il a changé
+                client.write_register(HR_JOUR, vie.jour)
+            dernier_jour = vie.jour
+
+            if debut - dernier_affichage > 5:
+                dernier_affichage = debut
+                print(f"{int(vie.heure):02d}h jour {vie.jour:3d} | HTB {u_htb:5.2f} kV | "
+                      f"charge {i_charge:4.0f} A | prise {regleur.prise:2d} | U HTA {u_hta:5.2f} kV")
+
+        except ModbusException as erreur:
+            print(f"Erreur Modbus : {erreur}")
+            client.connect()
+
+        # Attendre la fin du cycle
+        duree = time.monotonic() - debut
+        time.sleep(max(0.0, PAS_S - duree))
+
+
+if __name__ == "__main__":
+    main()
