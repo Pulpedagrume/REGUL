@@ -73,6 +73,13 @@ donc de 0,26 à 0,95 kV : il faut 3 à 4 manœuvres par jour, davantage en hiver
 et à la montée du matin. Le 2e jour d'une simulation d'hiver, l'écart reste
 sous 3 % de la consigne (test `test_boucle_fermee_regulation_sur_deux_journees`).
 
+**Intérieur du transformateur dans l'IHM** (groupe « Transformateur et régleur
+en charge ») : vue en coupe de la cuve avec le circuit magnétique à 3 colonnes,
+les enroulements secondaire (HTA) et primaire (HTB), les 17 sorties de prises
+du primaire et le régleur en charge (sélecteur à 17 plots et commutateur).
+Pendant une manœuvre, le bras du sélecteur tourne en 5 s vers la prise visée
+(`HR_PRISE_VISEE`) et le commutateur clignote.
+
 **Illustration dans l'IHM** (groupe « Vie réelle : ce qui se passe dehors ») :
 - une scène : ciel selon l'heure (nuit, aube, jour, coucher), soleil ou lune,
   sol selon la saison (neige, herbe, herbe sèche, feuilles), maisons dont
@@ -215,6 +222,7 @@ et les holding registers sont utilisés.
 | 4 | `HR_TEMPERATURE` | simulation → IHM | °C × 10, **signé** (complément à 2, type INT) |
 | 5 | `HR_HEURE` | simulation → IHM | minutes depuis minuit (0 à 1439) |
 | 6 | `HR_JOUR` | simulation ↔ IHM | jour de l'année (1 à 365) ; l'IHM l'écrit pour changer de saison |
+| 7 | `HR_PRISE_VISEE` | simulation → IHM | prise vers laquelle le régleur se déplace pendant une manœuvre, 0 au repos (pour animer le sélecteur) |
 | 10 | `HR_CONSIGNE` | IHM → automate | kV × 100 |
 | 11 | `HR_BANDE_MORTE` | IHM → automate | % × 100 |
 | 12 | `HR_TEMPO_1` | IHM → automate | s |

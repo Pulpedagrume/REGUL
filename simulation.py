@@ -29,6 +29,7 @@ from mapping import (
     ECHELLE_U_HTB,
     HR_I_CHARGE,
     HR_JOUR,
+    HR_PRISE_VISEE,
     HR_TEMPERATURE,
     HR_U_HTA,
     HR_U_HTB,
@@ -72,6 +73,10 @@ class Regleur:
         self.en_manoeuvre = False
         self.sens = 0               # +1 = monter, -1 = descendre
         self.chrono = 0.0           # temps écoulé depuis le début de la manœuvre
+
+    def prise_visee(self):
+        """Prise vers laquelle le régleur se déplace pendant une manœuvre, 0 au repos (pour l'IHM)."""
+        return self.prise + self.sens if self.en_manoeuvre else 0
 
     def cycle(self, ordre_monter, ordre_descendre, dt_s):
         if not self.en_manoeuvre:
@@ -178,6 +183,7 @@ def main():
             # ---------- 3. ÉCRITURE : mesures vers l'automate et l'IHM ----------
             client.write_coil(CO_MANOEUVRE_EN_COURS, regleur.en_manoeuvre)
             client.write_registers(HR_U_HTA, [round(u_hta * ECHELLE_U_HTA), regleur.prise])
+            client.write_register(HR_PRISE_VISEE, regleur.prise_visee())
             if vie_auto:                        # en mode curseurs, ce sont les curseurs qui écrivent
                 client.write_registers(HR_U_HTB, [round(u_htb * ECHELLE_U_HTB), round(i_charge)])
                 client.write_registers(HR_TEMPERATURE, [
