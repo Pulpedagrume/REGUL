@@ -7,7 +7,7 @@ import random
 
 from automate import PRISE_MAX as BUTEE_HAUTE_AUTOMATE
 from automate import Regulateur
-from simulation import PRISE_MAX, PRISE_MIN, Regleur, VieReelle, tension_hta
+from simulation import PRISE_MAX, PRISE_MIN, Regleur, VieReelle, profil_journalier, tension_hta
 
 
 def test_tension_hta_prise_neutre():
@@ -96,15 +96,22 @@ def test_vie_reelle_hiver_plus_charge_que_ete():
     assert hiver.temperature < ete.temperature
 
 
+def test_profil_journalier():
+    assert profil_journalier(19) == 1.0                 # pointe du soir
+    assert profil_journalier(4) < profil_journalier(9) < profil_journalier(19)   # creux, matin, soir
+    assert profil_journalier(5.5) == (0.48 + 0.58) / 2  # entre 5 h et 6 h : interpolation
+    assert profil_journalier(23.5) == (0.62 + 0.55) / 2 # de 23 h à minuit : on reboucle
+
+
 def test_vie_reelle_pointe_du_soir_et_creux_de_nuit():
     random.seed(1)
-    soir = VieReelle(heure=18, jour=15)
-    nuit = VieReelle(heure=6, jour=15)
+    soir = VieReelle(heure=19, jour=15)
+    nuit = VieReelle(heure=4, jour=15)
     assert soir.i_charge > nuit.i_charge + 250
 
 
-def test_boucle_fermee_regulation_sur_une_journee():
-    """Automate + régleur + charge : la tension reste près de la consigne toute une journée."""
+def test_boucle_fermee_regulation_sur_deux_journees():
+    """Automate + régleur + charge : la tension reste près de la consigne le 2e jour."""
     random.seed(2)
     vie = VieReelle(heure=6, jour=15)
     regleur = Regleur()
@@ -112,7 +119,7 @@ def test_boucle_fermee_regulation_sur_une_journee():
     dt_s, dt_ms = 0.1, 100
     ordre_monter = ordre_descendre = False
     hors_bande = 0
-    for n in range(2400):                               # 240 s : une journée simulée
+    for n in range(4800):                               # 480 s : deux journées simulées
         vie.cycle(dt_s)
         regleur.cycle(ordre_monter, ordre_descendre, dt_s)
         u = tension_hta(vie.u_htb, regleur.prise, vie.i_charge)
@@ -120,8 +127,9 @@ def test_boucle_fermee_regulation_sur_une_journee():
         ordre_monter, ordre_descendre = regul.ordre_monter, regul.ordre_descendre
         assert PRISE_MIN <= regleur.prise <= BUTEE_HAUTE_AUTOMATE
         assert not regul.defaut
-        # Après la mise en route, l'écart reste sous 3 % : bande morte (1 %) + retard de la tempo et de la manoeuvre
-        if n > 400 and abs(u - 20.5) > 20.5 * 0.03:
+        # Le 2e jour, l'écart reste sous 3 % : bande morte (1 %) + retard de la tempo et de la
+        # manœuvre quand la charge monte vite (pointe du matin)
+        if n > 2400 and abs(u - 20.5) > 20.5 * 0.03:
             hors_bande += 1
     assert hors_bande == 0
     assert regleur.prise > 9                            # il a fallu monter pour compenser la chute
