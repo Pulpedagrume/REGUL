@@ -49,6 +49,13 @@ U_HTB_NOMINALE = 63.0       # kV
 U_HTA_NOMINALE = 20.0       # kV
 HEURES_PAR_SECONDE = 0.1    # 1 s réelle = 6 min simulées : une journée dure 4 min
 JOURS_PAR_JOUR = 15         # le calendrier avance de 15 jours par journée simulée
+CHARGE_MAX = 950            # A : un soir de janvier à 19 h
+
+# Courbe de charge type d'une journée, heure par heure (de 0 h à 23 h), en part de la pointe :
+# creux de nuit vers 4 h, pointe du matin (lever, chauffe-eau), plateau de la journée,
+# pointe du soir à 19 h (cuisine, éclairage, chauffage)
+PROFIL_HORAIRE = [0.55, 0.50, 0.47, 0.45, 0.45, 0.48, 0.58, 0.75, 0.85, 0.85, 0.82, 0.82,
+                  0.85, 0.82, 0.78, 0.76, 0.78, 0.88, 0.98, 1.00, 0.95, 0.85, 0.72, 0.62]
 
 
 def tension_hta(u_htb, prise, i_charge):
@@ -84,12 +91,20 @@ class Regleur:
                 self.en_manoeuvre = False
 
 
+def profil_journalier(heure):
+    """Part de la pointe consommée à cette heure (0 à 1), entre deux valeurs du tableau."""
+    h = int(heure) % 24
+    fraction = heure - int(heure)
+    return PROFIL_HORAIRE[h] + (PROFIL_HORAIRE[(h + 1) % 24] - PROFIL_HORAIRE[h]) * fraction
+
+
 class VieReelle:
     """Fait varier U_HTB, la charge et la température comme dans la vraie vie.
 
-    Deux cycles se superposent : le jour (creux de charge la nuit, pointe vers
-    18 h) et l'année (charge forte en hiver, faible en été). On y ajoute un
-    petit aléa lent (marche aléatoire) pour que deux journées ne soient pas identiques.
+    Deux cycles se superposent : le jour (courbe de charge type, avec ses
+    pointes du matin et du soir) et l'année (charge forte en hiver à cause du
+    chauffage électrique, faible en été). On y ajoute un petit aléa lent
+    (marche aléatoire) pour que deux journées ne soient pas identiques.
     """
 
     def __init__(self, heure=6.0, jour=15):
@@ -111,11 +126,12 @@ class VieReelle:
         # L'aléa se promène lentement entre -1 et +1
         self.alea_htb = max(-1, min(1, self.alea_htb + random.uniform(-1, 1) * 0.05 * dt_s))
         self.alea_charge = max(-1, min(1, self.alea_charge + random.uniform(-1, 1) * 0.05 * dt_s))
-        # Cycles du jour et de l'année : +1 le soir vers 18 h / mi-janvier
-        soir = math.cos(2 * math.pi * (self.heure - 18) / 24)
+        # Jour : courbe de charge type. Année : +1 à la mi-janvier, -1 à la mi-juillet
+        profil = profil_journalier(self.heure)
         hiver = math.cos(2 * math.pi * (self.jour - 15) / 365)
-        self.i_charge = max(100, 500 + 250 * hiver + 200 * soir + 60 * self.alea_charge)
-        self.u_htb = U_HTB_NOMINALE - 1.0 * soir + 1.0 * self.alea_htb   # plus basse aux heures de pointe
+        saison = 0.6 + 0.2 * (1 + hiver)                    # 1 en hiver, 0,6 en été
+        self.i_charge = max(100, CHARGE_MAX * profil * saison + 50 * self.alea_charge)
+        self.u_htb = U_HTB_NOMINALE + 1.0 - 2.0 * profil + 1.0 * self.alea_htb   # plus basse aux heures de pointe
         self.temperature = 12 - 9 * hiver + 4 * math.cos(2 * math.pi * (self.heure - 15) / 24)
 
 

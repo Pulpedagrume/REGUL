@@ -136,13 +136,27 @@
         "groupType": "default"
     },
     {
+        "id": "g_vie",
+        "type": "ui-group",
+        "name": "Vie réelle : ce qui se passe dehors",
+        "page": "ui_page",
+        "width": "12",
+        "height": "1",
+        "order": 3,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
         "id": "g_commande",
         "type": "ui-group",
         "name": "Commande",
         "page": "ui_page",
         "width": "4",
         "height": "1",
-        "order": 3,
+        "order": 4,
         "showTitle": true,
         "className": "",
         "visible": "true",
@@ -156,7 +170,7 @@
         "page": "ui_page",
         "width": "4",
         "height": "1",
-        "order": 4,
+        "order": 5,
         "showTitle": true,
         "className": "",
         "visible": "true",
@@ -170,7 +184,7 @@
         "page": "ui_page",
         "width": "4",
         "height": "1",
-        "order": 5,
+        "order": 6,
         "showTitle": true,
         "className": "",
         "visible": "true",
@@ -184,7 +198,7 @@
         "page": "ui_page",
         "width": "12",
         "height": "1",
-        "order": 6,
+        "order": 7,
         "showTitle": true,
         "className": "",
         "visible": "true",
@@ -297,7 +311,7 @@
         "type": "function",
         "z": "regul",
         "name": "Lecture -> widgets",
-        "func": "// Reçoit les coils (topic \"coils\") puis les registres (topic \"registres\") lus dans l'automate\n// et les met en forme pour l'IHM. Une sortie par widget.\nconst a = global.get('adr');\nif (msg.topic === 'coils') { flow.set('co', msg.payload); return null; }\nconst co = flow.get('co');\nif (!co || !a) return null;\nconst hr = msg.payload;\n\nconst signe = v => v > 32767 ? v - 65536 : v;          // entier signé (température)\nconst uHta = hr[a.HR_U_HTA] / 100;\nconst consigne = hr[a.HR_CONSIGNE] / 100;\nconst bandeMorte = hr[a.HR_BANDE_MORTE] / 100;\nconst haut = consigne * (1 + bandeMorte / 100);\nconst bas = consigne * (1 - bandeMorte / 100);\n\n// Date et heure simulées\nconst cumul = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];\nconst noms = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];\nconst jour = hr[a.HR_JOUR];\nlet m = 0;\nwhile (m < 11 && jour > cumul[m + 1]) m++;\nconst minutes = hr[a.HR_HEURE];\nconst deuxChiffres = n => String(n).padStart(2, '0');\n\nconst etat = {\n    t: Date.now(),\n    uHta, consigne, bas, haut,\n    uHtb: hr[a.HR_U_HTB] / 10,\n    charge: hr[a.HR_I_CHARGE],\n    temperature: signe(hr[a.HR_TEMPERATURE]) / 10,\n    date: (jour - cumul[m]) + ' ' + noms[m],\n    heure: deuxChiffres(Math.floor(minutes / 60)) + ':' + deuxChiffres(minutes % 60),\n    prise: hr[a.HR_PRISE],\n    etape: hr[a.HR_ETAPE],\n    tempsRestant: hr[a.HR_TEMPS_RESTANT],\n    nbManoeuvres: hr[a.HR_NB_MANOEUVRES],\n    motDeVie: hr[a.HR_MOT_DE_VIE],\n    modeAuto: co[a.CO_MODE_AUTO],\n    enManoeuvre: co[a.CO_MANOEUVRE_EN_COURS],\n    defaut: co[a.CO_DEFAUT_REGLEUR],\n    blocage: co[a.CO_BLOCAGE],\n    butee: co[a.CO_BUTEE]\n};\n\n// Les widgets de réglage ne reçoivent une valeur que si elle a changé\n// (sinon on écraserait ce que l'opérateur est en train de taper)\nconst dernier = context.get('dernier') || {};\ncontext.set('dernier', dernier);\nconst siChange = (cle, valeur) => {\n    if (dernier[cle] === valeur) return null;\n    dernier[cle] = valeur;\n    return { payload: valeur };\n};\n\nreturn [\n    { payload: etat },                                             // 0 tableau d'état\n    { payload: uHta },                                             // 1 jauge\n    [{ topic: 'U HTA', payload: uHta },                            // 2 courbe de tension\n     { topic: 'Bande haute', payload: haut },\n     { topic: 'Bande basse', payload: bas }],\n    { topic: 'Prise', payload: etat.prise },                       // 3 courbe de prise\n    siChange('auto', co[a.CO_MODE_AUTO]),                          // 4 interrupteur AUTO / MANUEL\n    siChange('vie', co[a.CO_VARIATIONS_AUTO]),                     // 5 interrupteur vie réelle\n    siChange('consigne', consigne),                                // 6 à 9 réglages\n    siChange('bande', bandeMorte),\n    siChange('tempo1', hr[a.HR_TEMPO_1]),\n    siChange('tempo2', hr[a.HR_TEMPO_2]),\n    siChange('htb', etat.uHtb),                                    // 10 à 12 curseurs\n    siChange('charge', etat.charge),\n    siChange('jour', jour)\n];",
+        "func": "// Reçoit les coils (topic \"coils\") puis les registres (topic \"registres\") lus dans l'automate\n// et les met en forme pour l'IHM. Une sortie par widget.\nconst a = global.get('adr');\nif (msg.topic === 'coils') { flow.set('co', msg.payload); return null; }\nconst co = flow.get('co');\nif (!co || !a) return null;\nconst hr = msg.payload;\n\nconst signe = v => v > 32767 ? v - 65536 : v;          // entier signé (température)\nconst uHta = hr[a.HR_U_HTA] / 100;\nconst consigne = hr[a.HR_CONSIGNE] / 100;\nconst bandeMorte = hr[a.HR_BANDE_MORTE] / 100;\nconst haut = consigne * (1 + bandeMorte / 100);\nconst bas = consigne * (1 - bandeMorte / 100);\n\n// Date et heure simulées\nconst cumul = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];\nconst noms = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];\nconst jour = hr[a.HR_JOUR];\nlet m = 0;\nwhile (m < 11 && jour > cumul[m + 1]) m++;\nconst minutes = hr[a.HR_HEURE];\nconst deuxChiffres = n => String(n).padStart(2, '0');\n\nconst etat = {\n    t: Date.now(),\n    uHta, consigne, bas, haut,\n    uHtb: hr[a.HR_U_HTB] / 10,\n    charge: hr[a.HR_I_CHARGE],\n    temperature: signe(hr[a.HR_TEMPERATURE]) / 10,\n    date: (jour - cumul[m]) + ' ' + noms[m],\n    heure: deuxChiffres(Math.floor(minutes / 60)) + ':' + deuxChiffres(minutes % 60),\n    minutes, jour,\n    prise: hr[a.HR_PRISE],\n    etape: hr[a.HR_ETAPE],\n    tempsRestant: hr[a.HR_TEMPS_RESTANT],\n    nbManoeuvres: hr[a.HR_NB_MANOEUVRES],\n    motDeVie: hr[a.HR_MOT_DE_VIE],\n    modeAuto: co[a.CO_MODE_AUTO],\n    enManoeuvre: co[a.CO_MANOEUVRE_EN_COURS],\n    defaut: co[a.CO_DEFAUT_REGLEUR],\n    blocage: co[a.CO_BLOCAGE],\n    butee: co[a.CO_BUTEE]\n};\n\n// Les widgets de réglage ne reçoivent une valeur que si elle a changé\n// (sinon on écraserait ce que l'opérateur est en train de taper)\nconst dernier = context.get('dernier') || {};\ncontext.set('dernier', dernier);\nconst siChange = (cle, valeur) => {\n    if (dernier[cle] === valeur) return null;\n    dernier[cle] = valeur;\n    return { payload: valeur };\n};\n\nreturn [\n    { payload: etat },                                             // 0 tableau d'état et scène « vie réelle »\n    { payload: uHta },                                             // 1 jauge\n    [{ topic: 'U HTA', payload: uHta },                            // 2 courbe de tension\n     { topic: 'Bande haute', payload: haut },\n     { topic: 'Bande basse', payload: bas }],\n    { topic: 'Prise', payload: etat.prise },                       // 3 courbe de prise\n    siChange('auto', co[a.CO_MODE_AUTO]),                          // 4 interrupteur AUTO / MANUEL\n    siChange('vie', co[a.CO_VARIATIONS_AUTO]),                     // 5 interrupteur vie réelle\n    siChange('consigne', consigne),                                // 6 à 9 réglages\n    siChange('bande', bandeMorte),\n    siChange('tempo1', hr[a.HR_TEMPO_1]),\n    siChange('tempo2', hr[a.HR_TEMPO_2]),\n    siChange('htb', etat.uHtb),                                    // 10 à 12 curseurs\n    siChange('charge', etat.charge),\n    siChange('jour', jour)\n];",
         "outputs": 13,
         "timeout": 0,
         "noerr": 0,
@@ -308,7 +322,8 @@
         "y": 170,
         "wires": [
             [
-                "tpl_etat"
+                "tpl_etat",
+                "tpl_vie"
             ],
             [
                 "jauge_u"
@@ -408,6 +423,30 @@
         "className": "",
         "x": 820,
         "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "tpl_vie",
+        "type": "ui-template",
+        "z": "regul",
+        "group": "g_vie",
+        "page": "",
+        "ui": "",
+        "name": "Scène vie réelle",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div v-if=\"e\" class=\"vie\">\n    <!-- Scène : ce qui se passe dehors -->\n    <div class=\"scene\">\n      <svg viewBox=\"0 0 520 250\" role=\"img\" :aria-label=\"'Scène : ' + moment + ', ' + saison\">\n        <rect x=\"0\" y=\"0\" width=\"520\" height=\"250\" :fill=\"ciel\" />\n        <!-- Soleil le jour, lune la nuit -->\n        <circle v-if=\"estJour\" :cx=\"astre.x\" :cy=\"astre.y\" r=\"16\" fill=\"#ffd54f\" />\n        <g v-else>\n          <circle :cx=\"astre.x\" :cy=\"astre.y\" r=\"13\" fill=\"#eceff1\" />\n          <circle :cx=\"astre.x + 6\" :cy=\"astre.y - 4\" r=\"11\" :fill=\"ciel\" />\n        </g>\n        <!-- Sol selon la saison -->\n        <rect x=\"0\" y=\"200\" width=\"520\" height=\"50\" :fill=\"sol\" />\n\n        <!-- Poste source -->\n        <rect x=\"18\" y=\"140\" width=\"70\" height=\"60\" fill=\"#90a4ae\" stroke=\"#455a64\" />\n        <circle cx=\"45\" cy=\"165\" r=\"11\" fill=\"none\" stroke=\"#263238\" stroke-width=\"2\" />\n        <circle cx=\"58\" cy=\"165\" r=\"11\" fill=\"none\" stroke=\"#263238\" stroke-width=\"2\" />\n        <text x=\"53\" y=\"194\" text-anchor=\"middle\" class=\"etiquette\">Poste</text>\n\n        <!-- Ligne HTA : plus la charge est forte, plus le trait est épais et le courant rapide -->\n        <line x1=\"88\" y1=\"150\" x2=\"500\" y2=\"150\" stroke=\"#546e7a\" stroke-width=\"2\" />\n        <line x1=\"88\" y1=\"150\" x2=\"500\" y2=\"150\" stroke=\"#ffb300\" :stroke-width=\"epaisseur\"\n              stroke-dasharray=\"18 10\" stroke-linecap=\"round\" class=\"courant\" :style=\"{ animationDuration: vitesse }\" />\n\n        <!-- Maisons : fenêtres allumées en proportion de la charge -->\n        <g v-for=\"(m, i) in maisons\" :key=\"i\">\n          <line :x1=\"m.x + 22\" y1=\"150\" :x2=\"m.x + 22\" y2=\"160\" stroke=\"#546e7a\" stroke-width=\"2\" />\n          <polygon :points=\"(m.x - 4) + ',172 ' + (m.x + 22) + ',150 ' + (m.x + 48) + ',172'\" fill=\"#8d4f3a\" />\n          <rect :x=\"m.x\" y=\"172\" width=\"44\" height=\"30\" fill=\"#f5e6c8\" stroke=\"#8d6e63\" />\n          <rect :x=\"m.x + 6\" y=\"179\" width=\"12\" height=\"11\" :fill=\"m.f1 ? '#ffca28' : '#455a64'\" />\n          <rect :x=\"m.x + 26\" y=\"179\" width=\"12\" height=\"11\" :fill=\"m.f2 ? '#ffca28' : '#455a64'\" />\n          <!-- cheminée et fumée si chauffage -->\n          <rect :x=\"m.x + 32\" y=\"152\" width=\"6\" height=\"12\" fill=\"#6d4c41\" />\n          <g v-if=\"chauffage\" class=\"fumee\">\n            <circle :cx=\"m.x + 35\" cy=\"146\" r=\"4\" fill=\"#cfd8dc\" opacity=\"0.8\" />\n            <circle :cx=\"m.x + 39\" cy=\"137\" r=\"5\" fill=\"#cfd8dc\" opacity=\"0.6\" />\n          </g>\n        </g>\n\n        <!-- Bandeau d'information -->\n        <rect x=\"10\" y=\"10\" width=\"250\" height=\"56\" rx=\"6\" fill=\"rgba(255,255,255,0.85)\" />\n        <text x=\"20\" y=\"31\" class=\"titre\">{{ e.date }} · {{ e.heure }} · {{ saison }}</text>\n        <text x=\"20\" y=\"53\" class=\"info\">{{ moment }} · {{ e.temperature.toFixed(1) }} °C</text>\n        <rect x=\"300\" y=\"10\" width=\"210\" height=\"34\" rx=\"6\" fill=\"rgba(255,255,255,0.85)\" />\n        <text x=\"310\" y=\"32\" class=\"info\">{{ usage }}</text>\n      </svg>\n    </div>\n\n    <!-- Courbe de charge de la journée simulée -->\n    <div class=\"courbe\">\n      <div class=\"entete\">\n        <span>Charge du poste sur la journée simulée</span>\n        <b>{{ e.charge }} A</b>\n      </div>\n      <svg viewBox=\"0 0 320 210\" role=\"img\" aria-label=\"Courbe de charge de la journée, de 0 h à 24 h\">\n        <!-- grille : 0, 500, 1000 A et 0, 6, 12, 18, 24 h -->\n        <g v-for=\"a in [0, 500, 1000]\" :key=\"'a' + a\">\n          <line x1=\"40\" :x2=\"310\" :y1=\"yA(a)\" :y2=\"yA(a)\" class=\"grille\" />\n          <text x=\"34\" :y=\"yA(a) + 4\" text-anchor=\"end\" class=\"axe\">{{ a }}</text>\n        </g>\n        <g v-for=\"h in [0, 6, 12, 18, 24]\" :key=\"'h' + h\">\n          <line :x1=\"xH(h)\" :x2=\"xH(h)\" y1=\"10\" y2=\"180\" class=\"grille\" />\n          <text :x=\"xH(h)\" y=\"196\" text-anchor=\"middle\" class=\"axe\">{{ h }} h</text>\n        </g>\n        <polyline :points=\"trace(veille)\" class=\"veille\" />\n        <polyline :points=\"trace(aujourdhui)\" class=\"jour\" />\n        <circle :cx=\"xH(e.minutes / 60)\" :cy=\"yA(e.charge)\" r=\"4\" class=\"point\" />\n      </svg>\n      <div class=\"legende\"><span class=\"l-jour\"></span>aujourd'hui <span class=\"l-veille\"></span>veille</div>\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data() {\n    // charge mémorisée par tranche de 10 min simulées (144 tranches par jour)\n    return { aujourdhui: [], veille: [], derniereMinute: null }\n  },\n  computed: {\n    e() { return this.msg && this.msg.payload ? this.msg.payload : null },\n    h() { return this.e.minutes / 60 },\n    estJour() { return this.h >= 7 && this.h < 20 },\n    ciel() {\n      const h = this.h\n      if (h < 6 || h >= 21.5) return '#14213d'      // nuit\n      if (h < 7.5) return '#f4a261'                 // aube\n      if (h < 18.5) return '#8ecae6'                // jour\n      if (h < 20) return '#e76f51'                  // coucher du soleil\n      return '#33415c'                              // soirée\n    },\n    astre() {\n      // Le soleil parcourt un arc de 7 h à 20 h, la lune le reste du temps\n      const debut = this.estJour ? 7 : 20\n      const duree = this.estJour ? 13 : 11\n      const p = ((this.h - debut + 24) % 24) / duree\n      return { x: 40 + p * 440, y: 132 - 66 * Math.sin(Math.PI * p) }\n    },\n    saison() {\n      const j = this.e.jour\n      if (j < 80 || j >= 355) return 'Hiver'\n      if (j < 172) return 'Printemps'\n      if (j < 266) return 'Été'\n      return 'Automne'\n    },\n    sol() {\n      return { Hiver: '#eef3f7', Printemps: '#8fcb6b', 'Été': '#c5d36b', Automne: '#d39a50' }[this.saison]\n    },\n    moment() {\n      const h = this.h\n      if (h < 6) return 'Creux de nuit'\n      if (h < 10) return 'Pointe du matin'\n      if (h < 17) return 'Journée'\n      if (h < 21) return 'Pointe du soir'\n      return 'Soirée'\n    },\n    chauffage() { return this.e.temperature < 15 },\n    usage() {\n      if (this.e.temperature < 15) return 'Chauffage électrique en marche'\n      if (this.e.temperature > 25) return 'Climatisation en marche'\n      return 'Ni chauffage ni climatisation'\n    },\n    // 10 fenêtres : on en allume autant que la charge le demande (150 A = aucune, 950 A = toutes)\n    maisons() {\n      const allumees = Math.round(Math.max(0, Math.min(10, (this.e.charge - 150) / 80)))\n      return [0, 1, 2, 3, 4].map(i => ({ x: 130 + i * 76, f1: 2 * i < allumees, f2: 2 * i + 1 < allumees }))\n    },\n    epaisseur() { return 1.5 + this.e.charge / 220 },\n    vitesse() { return (3 - this.e.charge / 500).toFixed(2) + 's' }\n  },\n  watch: {\n    msg() {\n      if (!this.e) return\n      const m = this.e.minutes\n      // Passage de minuit : la journée finie devient la veille\n      if (this.derniereMinute !== null && m < this.derniereMinute - 60) {\n        this.veille = this.aujourdhui\n        this.aujourdhui = []\n      }\n      this.derniereMinute = m\n      const t = this.aujourdhui.slice()\n      t[Math.floor(m / 10)] = this.e.charge\n      this.aujourdhui = t\n    }\n  },\n  methods: {\n    xH(h) { return 40 + h / 24 * 270 },\n    yA(a) { return 180 - a / 1100 * 170 },\n    trace(tab) {\n      const pts = []\n      tab.forEach((a, i) => { if (a !== undefined) pts.push(this.xH(i / 6) + ',' + this.yA(a)) })\n      return pts.join(' ')\n    }\n  }\n}\n</script>\n\n<style scoped>\n.vie { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 12px; align-items: start; }\n.scene svg, .courbe svg { width: 100%; height: auto; display: block; }\n.scene svg { border-radius: 4px; }\n.etiquette { font-size: 11px; fill: #263238; }\n.titre { font-size: 14px; font-weight: 700; fill: #263238; }\n.info { font-size: 13px; fill: #37474f; }\n.courant { animation: courant linear infinite; }\n@keyframes courant { to { stroke-dashoffset: -56; } }\n.fumee { animation: fumee 3s ease-in-out infinite; }\n@keyframes fumee { 50% { transform: translateY(-4px); opacity: 0.5; } }\n@media (prefers-reduced-motion: reduce) { .courant, .fumee { animation: none; } }\n.entete { display: flex; justify-content: space-between; font-size: 13px; color: #607d8b; }\n.entete b { color: #1565c0; font-size: 18px; font-variant-numeric: tabular-nums; }\n.grille { stroke: #e3e8ec; stroke-width: 1; }\n.axe { font-size: 10px; fill: #78909c; }\n.jour { fill: none; stroke: #1565c0; stroke-width: 2.5; stroke-linejoin: round; }\n.veille { fill: none; stroke: #b0bec5; stroke-width: 2; stroke-dasharray: 4 3; }\n.point { fill: #1565c0; stroke: #ffffff; stroke-width: 2; }\n.legende { display: flex; gap: 10px; align-items: center; font-size: 12px; color: #607d8b; }\n.legende span { display: inline-block; width: 18px; height: 0; margin-right: 4px; }\n.l-jour { border-top: 3px solid #1565c0; }\n.l-veille { border-top: 2px dashed #b0bec5; }\n@media (max-width: 700px) { .vie { grid-template-columns: 1fr; } }\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": false,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 820,
+        "y": 20,
         "wires": [
             []
         ]

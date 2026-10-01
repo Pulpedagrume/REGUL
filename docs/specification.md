@@ -54,22 +54,33 @@ lui-même U_HTB et I_charge. Pratique pour une démonstration pas à pas
 (baisser U_HTB à 0 montre le blocage sous-tension).
 
 **2. « Vie réelle » accélérée** (`CO_VARIATIONS_AUTO` = 1) : une horloge
-simulée fait défiler les heures, les jours de la semaine et les saisons.
+simulée fait défiler les heures et les saisons (fonction `profil_journalier`
+et classe `VieReelle` de `simulation.py`).
 
 | Élément | Modèle |
 |---|---|
 | Accélération | 1 s réelle = 6 min simulées : une journée dure 4 min |
 | Saisons | le calendrier avance de 15 jours par journée simulée : une année dure environ 1 h 40. L'IHM peut écrire `HR_JOUR` pour sauter en hiver ou en été |
-| Température | moyenne saisonnière (≈ 4 °C mi-janvier, ≈ 20 °C mi-juillet) + cycle jour/nuit (± 4 °C, plus froid à 5 h, plus chaud à 15 h) + dérive aléatoire lente (vague de froid, canicule) |
-| Profil de charge journalier | tableau de 24 coefficients horaires : creux de nuit (4 h), pointe du matin (8-9 h), plateau, pointe du soir (19 h) |
-| Effet de la température | chauffage électrique : + 3 % par °C sous 15 °C ; climatisation : + 2 % par °C au-dessus de 25 °C |
-| Week-end | charge × 0,85 le samedi et le dimanche |
-| Aléa | petit bruit filtré (± quelques %) |
-| U_HTB | plus haute la nuit (réseau peu chargé), plus basse aux heures de pointe, + dérive aléatoire lente ; toujours dans ± 5 % |
+| Courbe de charge type | tableau `PROFIL_HORAIRE` de 24 coefficients (part de la pointe, de 0 h à 23 h) : creux de nuit vers 4 h (0,45), pointe du matin vers 8-9 h (0,85), plateau de la journée, pointe du soir à 19 h (1,00). Entre deux heures, on interpole en ligne droite |
+| Saison | charge × 1 à la mi-janvier (chauffage électrique), × 0,6 à la mi-juillet |
+| Charge | 950 A × courbe type × saison, + un aléa lent de ± 50 A |
+| Température | 12 °C − 9 °C en hiver (+ 9 °C en été), + 4 °C l'après-midi (affichage uniquement) |
+| U_HTB | 64 kV − 2 kV × courbe type, + aléa lent de ± 1 kV : plus haute la nuit, plus basse aux heures de pointe, toujours dans ± 5 % |
 
-Ordres de grandeur : ≈ 300 A une nuit d'été, ≈ 900 A un soir de grand
-froid. La chute k × I varie donc de 0,3 à 0,9 kV, et U_HTB de ± 3 kV
-au secondaire : il faut plusieurs prises par jour, davantage en hiver.
+Ordres de grandeur : environ 950 A un soir de janvier à 19 h, 430 A une nuit
+d'hiver, 570 A un soir d'été et 260 A une nuit d'été. La chute k × I varie
+donc de 0,26 à 0,95 kV : il faut 3 à 4 manœuvres par jour, davantage en hiver
+et à la montée du matin. Le 2e jour d'une simulation d'hiver, l'écart reste
+sous 3 % de la consigne (test `test_boucle_fermee_regulation_sur_deux_journees`).
+
+**Illustration dans l'IHM** (groupe « Vie réelle : ce qui se passe dehors ») :
+- une scène : ciel selon l'heure (nuit, aube, jour, coucher), soleil ou lune,
+  sol selon la saison (neige, herbe, herbe sèche, feuilles), maisons dont
+  les fenêtres s'allument en proportion de la charge, fumée des cheminées
+  quand il fait moins de 15 °C (chauffage), courant animé sur la ligne HTA
+  (plus épais et plus rapide quand la charge augmente) ;
+- la courbe de charge de la journée simulée (0 h à 24 h), avec celle de la veille
+  en pointillés. Elle se remplit pendant que la page est ouverte.
 
 Les défauts (régleur bloqué, manœuvre trop longue) ne sont **pas** simulés,
 pour garder le code court : ils sont vérifiés par les tests pytest.
