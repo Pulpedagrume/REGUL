@@ -45,6 +45,15 @@ def test_regleur_monte_en_5_secondes():
     assert not r.en_manoeuvre and r.prise == 10
 
 
+def test_regleur_prise_visee():
+    r = Regleur()
+    assert r.prise_visee() == 0                         # au repos
+    r.cycle(True, False, 0.1)
+    assert r.prise_visee() == 10                        # en route de 9 vers 10
+    r.cycle(False, False, 5)
+    assert r.prise_visee() == 0 and r.prise == 10
+
+
 def test_regleur_descend():
     r = Regleur()
     r.cycle(False, True, 1)

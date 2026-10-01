@@ -38,6 +38,7 @@ HR_I_CHARGE = 3             # A
 HR_TEMPERATURE = 4          # °C x 10, entier signé (complément à 2, type INT)
 HR_HEURE = 5                # minutes depuis minuit (0 à 1439)
 HR_JOUR = 6                 # jour de l'année (1 à 365) ; l'IHM peut l'écrire pour changer de saison
+HR_PRISE_VISEE = 7          # prise vers laquelle le régleur se déplace (0 au repos)  simulation -> IHM
 # Réglages                                                        IHM -> automate
 HR_CONSIGNE = 10            # kV x 100
 HR_BANDE_MORTE = 11         # % x 100 (100 = 1,00 %)
